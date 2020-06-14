@@ -1,7 +1,8 @@
 package Main
 
 import AppConfig.Config
-import Database.{NoPost, NoTopic, Repository}
+import Database.Repository.{NoPost, NoTopic}
+import Database.Repository
 import Validation._
 import akka.actor.ActorSystem
 import akka.event.{Logging, LoggingAdapter}
@@ -18,7 +19,7 @@ trait Service extends Protocols with TodoDirectives with ValidatorDirectives {
   implicit val materializer: Materializer
 
   val logger: LoggingAdapter
-  val database = Repository
+  val database = new Repository
 
   val routes = logRequestResult("akka-http-forum") {
     topicRoute ~ postRoute

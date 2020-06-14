@@ -34,11 +34,18 @@ trait ForumRepository {
 
 }
 
-case class NoPost(msg: String) extends Exception(msg)
+object Repository {
 
-case class NoTopic(msg: String) extends Exception(msg)
+  case class NoPost(secret: String) extends Exception("")
 
-object Repository extends Connection with ForumRepository with Config {
+  case class NoTopic(id: String) extends Exception("")
+
+}
+
+class Repository extends Connection with ForumRepository with Config {
+
+  import Repository._
+
   val LIMIT = config.getInt("app.limit")
   val AFTER = LIMIT * 2 / 3
   val BEFORE = LIMIT / 3
@@ -89,9 +96,7 @@ object Repository extends Connection with ForumRepository with Config {
 
     db.run {
       for {
-        topic <- {
-          topics.filter(_.id === topicId).result.headOption
-        }
+        topic <- topics.filter(_.id === topicId).result.headOption
         posts <- topic match {
           case Some(_) => posts
             .filter(_.topic_id === topicId)
@@ -99,7 +104,7 @@ object Repository extends Connection with ForumRepository with Config {
             .drop(off2)
             .take(aft2 + bef2 + 1)
             .result
-          case None => DBIO.failed(NoTopic("topicWithPosts"))
+          case None => DBIO.failed(NoTopic(topicId.toString))
         }
       } yield Main.TopicPosts(topic.get, posts)
     }
