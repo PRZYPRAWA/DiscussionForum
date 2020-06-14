@@ -16,8 +16,6 @@ object ValidatorConsts extends Config {
   def validateEmail(email: String) = {
     if (!email.matches(emailRegex))
       Some(ApiError.wrongEmailFormat)
-    else if (email.isEmpty)
-      Some(ApiError.emptyEmailField)
     else None
   }
 

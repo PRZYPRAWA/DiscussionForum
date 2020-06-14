@@ -17,8 +17,6 @@ object ApiError {
 
   val contentTooLong: ApiError = new ApiError(StatusCodes.BadRequest, "The content field is too long.")
 
-  val emptyEmailField: ApiError = new ApiError(StatusCodes.BadRequest, "The email field must not be empty.")
-
   val wrongEmailFormat: ApiError = new ApiError(StatusCodes.BadRequest, "The mail field is invalid.")
 
   val emptyUsernameField: ApiError = new ApiError(StatusCodes.BadRequest, "The username field must not be empty.")
