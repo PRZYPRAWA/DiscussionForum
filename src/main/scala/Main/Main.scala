@@ -6,7 +6,6 @@ import Validation._
 import akka.actor.ActorSystem
 import akka.event.{Logging, LoggingAdapter}
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.stream.{ActorMaterializer, Materializer}
 
 import scala.concurrent.ExecutionContextExecutor
@@ -22,14 +21,17 @@ trait Service extends Protocols with TodoDirectives with ValidatorDirectives {
   val database = Repository
 
   val routes = logRequestResult("akka-http-forum") {
-    topicRouter ~ postRouter
+    topicRoute ~ postRoute
   }
 
-  val topicRouter = pathPrefix("topics") {
+  val topicRoute = pathPrefix("topics") {
     (get & path(LongNumber)) { id =>
       parameters('before.as[Int].?, 'after.as[Int].?) { (before: Option[Int], after: Option[Int]) =>
         parameter("offset".as[Int].?) { offset: Option[Int] =>
-          handleWithGeneric(database.topicWithPosts(id, offset, before, after)) { posts =>
+          handle(database.topicWithPosts(id, offset, before, after)) {
+            case NoTopic(_) => ApiError.topicNotFound(id.toString)
+            case _ => ApiError.generic
+          } { posts =>
             complete(posts)
           }
         }
@@ -55,15 +57,15 @@ trait Service extends Protocols with TodoDirectives with ValidatorDirectives {
         }
       } ~
       (get & parameters('limit.as[Int].?, 'offset.as[Int].?)) { (limit: Option[Int], offset: Option[Int]) =>
-        handleWithGeneric(database.allTopics(limit, offset)) { topics =>
+        handleWithGeneric(database.getTopics(limit, offset)) { topics =>
           complete(topics)
         }
       }
   }
 
-  val postRouter = pathPrefix("posts") {
+  val postRoute = pathPrefix("posts") {
     (get & parameters('limit.as[Int].?, 'offset.as[Int].?)) { (limit: Option[Int], offset: Option[Int]) =>
-      handleWithGeneric(database.allPosts(limit, offset)) { posts =>
+      handleWithGeneric(database.getPosts(limit, offset)) { posts =>
         complete(posts)
       }
     } ~

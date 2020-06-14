@@ -3,6 +3,7 @@ package Main
 import java.sql.Timestamp
 
 import Validation.ApiError
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCode
 import spray.json.{DefaultJsonProtocol, RootJsonFormat, _}
 
@@ -35,7 +36,7 @@ case class TopicPosts(topic: Topic, posts: Seq[Post])
 case class TopicPost(topic: Topic, post: Post)
 
 
-trait Protocols extends DefaultJsonProtocol {
+trait Protocols extends DefaultJsonProtocol with SprayJsonSupport {
 
   implicit object TimestampJsonFormat extends RootJsonFormat[Timestamp] {
     def write(t: Timestamp) = JsString(t.toString)

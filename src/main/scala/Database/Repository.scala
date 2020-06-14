@@ -5,19 +5,18 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 import AppConfig.Config
-import Main.{CreateDiscussionTopic, CreatePost, Post, Topic, TopicPost, TopicPosts, UpdatePost}
+import Main._
 import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.util.Try
 
 
 trait ForumRepository {
 
-  def allTopics(limit: Option[Int], offset: Option[Int]): Future[Seq[Topic]]
+  def getTopics(limit: Option[Int], offset: Option[Int]): Future[Seq[Topic]]
 
-  def allPosts(limit: Option[Int], offset: Option[Int]): Future[Seq[Post]]
+  def getPosts(limit: Option[Int], offset: Option[Int]): Future[Seq[Post]]
 
   def getPost(postId: Long): Future[Option[Post]]
 
@@ -27,9 +26,9 @@ trait ForumRepository {
 
   def addTopic(createTopic: CreateDiscussionTopic): Future[TopicPost]
 
-  def addPost(topicId: Long, createPost: CreatePost): Future[Try[Post]]
+  def addPost(topicId: Long, createPost: CreatePost): Future[Post]
 
-  def updatePost(postSecret: String, updatePost: UpdatePost): Future[Option[Post]]
+  def updatePost(postSecret: String, updatePost: UpdatePost): Future[Post]
 
   def deletePost(postSecret: String): Future[Int]
 
@@ -47,7 +46,7 @@ object Repository extends Connection with ForumRepository with Config {
   lazy val topics = TableQuery[TopicTable]
   lazy val posts = TableQuery[PostTable]
 
-  override def allTopics(limit: Option[Int] = None, offset: Option[Int] = None): Future[Seq[Topic]] = {
+  override def getTopics(limit: Option[Int] = None, offset: Option[Int] = None): Future[Seq[Topic]] = {
     val tmpLimit = limit.getOrElse(0)
     val lim = if (tmpLimit <= 0 || tmpLimit > LIMIT) LIMIT else tmpLimit
 
@@ -58,7 +57,7 @@ object Repository extends Connection with ForumRepository with Config {
   }
 
 
-  override def allPosts(limit: Option[Int] = None, offset: Option[Int] = None): Future[Seq[Post]] = {
+  override def getPosts(limit: Option[Int] = None, offset: Option[Int] = None): Future[Seq[Post]] = {
     val tmpLimit = limit.getOrElse(0)
     val lim = if (tmpLimit <= 0 || tmpLimit > LIMIT) LIMIT else tmpLimit
 
@@ -135,7 +134,7 @@ object Repository extends Connection with ForumRepository with Config {
     }
   }
 
-  override def addPost(topicId: Long, createPost: CreatePost): Future[Try[Post]] = db.run {
+  override def addPost(topicId: Long, createPost: CreatePost): Future[Post] = db.run {
     val date = Timestamp.valueOf(LocalDateTime.now())
     for {
       tid <- topics.filter(_.id === topicId).result.headOption
@@ -150,15 +149,22 @@ object Repository extends Connection with ForumRepository with Config {
             topicId
           )
 
-          topics.filter(_.id === topicId).map(_.last_response).update(date) >> (posts returning posts += post).asTry
+          topics.filter(_.id === topicId).map(_.last_response).update(date) >>
+            (posts returning posts += post)
         case None => DBIO.failed(NoTopic(topicId.toString))
       }
     } yield p
   }
 
-  override def updatePost(postSecret: String, updatePost: UpdatePost): Future[Option[Post]] = db.run {
-    posts.filter(_.secret === postSecret).map(_.content).update(updatePost.content) andThen
-      posts.filter(_.secret === postSecret).result.headOption
+  override def updatePost(postSecret: String, updatePost: UpdatePost): Future[Post] = db.run {
+    for {
+      exists <- posts.filter(_.secret === postSecret).result.headOption
+      post <- exists match {
+        case Some(_) => posts.filter(_.secret === postSecret).map(_.content).update(updatePost.content) andThen
+          posts.filter(_.secret === postSecret).result.head
+        case None => DBIO.failed(NoPost(postSecret))
+      }
+    } yield post
   }
 
   override def deletePost(postSecret: String): Future[Int] = db.run {

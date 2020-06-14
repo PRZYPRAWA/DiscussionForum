@@ -1,8 +1,9 @@
 package Main
 
 import Validation.ApiError
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse}
 import akka.http.scaladsl.server.{Directive1, Directives}
+import spray.json._
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
@@ -14,8 +15,7 @@ trait TodoDirectives extends Directives with Protocols {
       provide(t)
     case Failure(error) =>
       val apiError = e(error)
-      //complete(apiError.statusCode, apiError.message)
-      complete(apiError)
+      complete(HttpResponse(apiError.statusCode, entity = HttpEntity(ContentTypes.`application/json`, apiError.toJson.toString)))
   }
 
   def handleWithGeneric[T](f: Future[T]): Directive1[T] =

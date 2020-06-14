@@ -18,3 +18,4 @@ libraryDependencies ++= {
     "com.typesafe.slick" %% "slick" % "3.3.2"
   )
 }
+
