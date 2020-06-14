@@ -1,6 +1,9 @@
 package Main
 
 import java.sql.Timestamp
+
+import Validation.ApiError
+import akka.http.scaladsl.model.StatusCode
 import spray.json.{DefaultJsonProtocol, RootJsonFormat, _}
 
 case class Topic(
@@ -31,6 +34,7 @@ case class TopicPosts(topic: Topic, posts: Seq[Post])
 
 case class TopicPost(topic: Topic, post: Post)
 
+
 trait Protocols extends DefaultJsonProtocol {
 
   implicit object TimestampJsonFormat extends RootJsonFormat[Timestamp] {
@@ -40,6 +44,16 @@ trait Protocols extends DefaultJsonProtocol {
       case JsString(value) =>
         Timestamp.valueOf(value)
       case _ => deserializationError("Timestamp expected")
+    }
+  }
+
+  implicit object StatusCodeFormat extends RootJsonFormat[StatusCode] {
+    def write(s: StatusCode) = JsNumber(s.intValue())
+
+    def read(value: JsValue) = value match {
+      case JsNumber(value) =>
+        StatusCode.int2StatusCode(value.intValue)
+      case _ => deserializationError("StatusCode expected")
     }
   }
 
@@ -53,4 +67,5 @@ trait Protocols extends DefaultJsonProtocol {
   implicit val topicPostsFormat = jsonFormat2(TopicPosts.apply)
   implicit val topicPostFormat = jsonFormat2(TopicPost.apply)
 
+  implicit val apiErrorFormat = jsonFormat2(ApiError.apply)
 }

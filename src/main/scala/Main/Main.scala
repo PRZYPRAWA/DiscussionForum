@@ -21,6 +21,10 @@ trait Service extends Protocols with TodoDirectives with ValidatorDirectives {
   val logger: LoggingAdapter
   val database = Repository
 
+  val routes = logRequestResult("akka-http-forum") {
+    topicRouter ~ postRouter
+  }
+
   val topicRouter = pathPrefix("topics") {
     (get & path(LongNumber)) { id =>
       parameters('before.as[Int].?, 'after.as[Int].?) { (before: Option[Int], after: Option[Int]) =>
@@ -84,13 +88,6 @@ trait Service extends Protocols with TodoDirectives with ValidatorDirectives {
         }
       }
   }
-
-  val routes = {
-    logRequestResult("akka-http-forum") {
-      topicRouter ~ postRouter
-    }
-  }
-
 
 }
 
