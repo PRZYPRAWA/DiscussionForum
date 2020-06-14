@@ -72,36 +72,36 @@ object Repository extends Connection with ForumRepository with Config {
                               before: Option[Int] = None,
                               after: Option[Int] = None): Future[TopicPosts] = {
     val tmpBefore = before.getOrElse(0)
-    val bef = if (tmpBefore < 0 || tmpBefore > BEFORE) BEFORE else tmpBefore
+    val bef1 = if (tmpBefore < 0 || tmpBefore > BEFORE) BEFORE else tmpBefore
 
     val tmpAfter = after.getOrElse(0)
-    val aft = if (tmpAfter < 0 || tmpAfter > AFTER) AFTER else tmpAfter
+    val aft1 = if (tmpAfter < 0 || tmpAfter > AFTER) AFTER else tmpAfter
 
-    val sum = aft + bef + 1
-    val (a, b) =
-      if (sum > LIMIT) (LIMIT * aft / sum, LIMIT * bef / sum)
-      else if (aft == 0 && bef == 0) (AFTER, BEFORE)
-      else (aft, bef)
+    val sum = aft1 + bef1 + 1
+    val (aft2, bef2) =
+      if (sum > LIMIT) (LIMIT * aft1 / sum, LIMIT * bef1 / sum)
+      else if (aft1 == 0 && bef1 == 0) (AFTER, BEFORE)
+      else (aft1, bef1)
 
     val tmpOff = offset.getOrElse(0)
-    val off = if (tmpOff < 0) 0 else tmpOff
-    val o = if (off - b < 0) 0 else off - b
+    val off1 = if (tmpOff < 0) 0 else tmpOff
+    val off2 = if (off1 - bef2 < 0) 0 else off1 - bef2
 
     db.run {
       for {
-        t <- {
+        topic <- {
           topics.filter(_.id === topicId).result.headOption
         }
-        ps <- t match {
+        posts <- topic match {
           case Some(_) => posts
             .filter(_.topic_id === topicId)
             .sortBy(_.created)
-            .drop(o)
-            .take(a + b + 1)
+            .drop(off2)
+            .take(aft2 + bef2 + 1)
             .result
           case None => DBIO.failed(NoTopic("topicWithPosts"))
         }
-      } yield Main.TopicPosts(t.get, ps)
+      } yield Main.TopicPosts(topic.get, posts)
     }
   }
 
@@ -117,20 +117,20 @@ object Repository extends Connection with ForumRepository with Config {
 
     db.run {
       for {
-        t <- topics returning topics += topic
-        p <- {
+        newTopic <- topics returning topics += topic
+        newPost <- {
           val post = Post(
             createTopic.content,
             createTopic.nick,
             createTopic.email,
             date,
             UUID.randomUUID().toString,
-            t.id
+            newTopic.id
           )
 
           posts returning posts += post
         }
-      } yield Main.TopicPost(t, p)
+      } yield Main.TopicPost(newTopic, newPost)
     }
   }
 
@@ -138,7 +138,7 @@ object Repository extends Connection with ForumRepository with Config {
     val date = Timestamp.valueOf(LocalDateTime.now())
     for {
       tid <- topics.filter(_.id === topicId).result.headOption
-      p <- tid match {
+      newPost <- tid match {
         case Some(_) =>
           val post = Post(
             createPost.content,
@@ -153,7 +153,7 @@ object Repository extends Connection with ForumRepository with Config {
             (posts returning posts += post)
         case None => DBIO.failed(NoTopic(topicId.toString))
       }
-    } yield p
+    } yield newPost
   }
 
   override def updatePost(postSecret: String, updatePost: UpdatePost): Future[Post] = db.run {
