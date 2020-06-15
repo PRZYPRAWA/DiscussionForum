@@ -35,6 +35,7 @@ CREATE TABLE post
 3. Start the app with:
 ```sbtshell
 $ sbt
+> compile
 > run
 ```
 When the app is running, you can start sending the requests.
@@ -329,4 +330,17 @@ curl --location --request DELETE 'localhost:9000/posts/76ee3770-19e5-41bb-bc78-9
 As response we simply get number of lines deleted:
 ```json
 1
+```
+
+## Running tests 
+To run unit tests:
+```sbt
+$ sbt
+> test
+```
+
+To run integration tests:
+```sbt
+$ sbt
+> IntegrationTest / testOnly
 ```
