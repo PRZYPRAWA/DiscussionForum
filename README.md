@@ -1,4 +1,5 @@
 # DiscussionForum
+Simple REST API for Discussion Forum
 
 ## Requirements
 - Installed PostgreSQL - version 42.2.13, or possible necessity to change version in build.sbt
