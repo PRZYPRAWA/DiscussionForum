@@ -10,6 +10,7 @@ import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.math.max
 
 
 trait Repository {
@@ -57,8 +58,9 @@ class ForumRepository(database: Database) extends Repository with Config {
     val tmpLimit = limit.getOrElse(0)
     val lim = if (tmpLimit <= 0 || tmpLimit > LIMIT) LIMIT else tmpLimit
 
+
     val tmpOffset = offset.getOrElse(0)
-    val off = if (tmpOffset < 0) 0 else tmpOffset
+    val off = max(0, tmpOffset)
 
     database.run(topics.sortBy(_.last_response.desc).drop(off).take(lim).result)
   }
@@ -69,9 +71,16 @@ class ForumRepository(database: Database) extends Repository with Config {
     val lim = if (tmpLimit <= 0 || tmpLimit > LIMIT) LIMIT else tmpLimit
 
     val tmpOffset = offset.getOrElse(0)
-    val off = if (tmpOffset < 0) 0 else tmpOffset
+    val off = max(0, tmpOffset)
 
     database.run(posts.drop(off).take(lim).result)
+  }
+
+  private def countAfterBefore(aft: Int, bef: Int): (Int, Int) = {
+    val sum = aft + bef + 1
+    if (sum > LIMIT) (LIMIT * aft / sum, LIMIT * bef / sum)
+    else if (aft == 0 && bef == 0) (AFTER, BEFORE)
+    else (aft, bef)
   }
 
   override def topicWithPosts(topicId: Long,
@@ -81,18 +90,15 @@ class ForumRepository(database: Database) extends Repository with Config {
     val tmpBefore = before.getOrElse(0)
     val bef1 = if (tmpBefore < 0 || tmpBefore > BEFORE) BEFORE else tmpBefore
 
+
     val tmpAfter = after.getOrElse(0)
     val aft1 = if (tmpAfter < 0 || tmpAfter > AFTER) AFTER else tmpAfter
 
-    val sum = aft1 + bef1 + 1
-    val (aft2, bef2) =
-      if (sum > LIMIT) (LIMIT * aft1 / sum, LIMIT * bef1 / sum)
-      else if (aft1 == 0 && bef1 == 0) (AFTER, BEFORE)
-      else (aft1, bef1)
+    val (aft2, bef2) = countAfterBefore(aft1, bef1)
 
     val tmpOff = offset.getOrElse(0)
-    val off1 = if (tmpOff < 0) 0 else tmpOff
-    val off2 = if (off1 - bef2 < 0) 0 else off1 - bef2
+    val off1 = max(0, tmpOff)
+    val off2 = max(0, off1 - bef2)
 
     database.run {
       for {

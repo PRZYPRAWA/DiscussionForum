@@ -44,5 +44,11 @@ class PostInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with D
       }
     }
 
+    "return posts" in new Tests {
+      Get("/posts") ~> topicRouter.postRoute ~> check {
+        status shouldBe StatusCodes.OK
+      }
+    }
+
   }
 }
