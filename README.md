@@ -77,7 +77,7 @@ curl http://localhost:9000/topics
 ]
 ```
 
-Can provide limit and offset parameters to paginate:
+Possible to provide limit and offset parameters to paginate:
 ```bash
 curl "http://localhost:9000/topics?limit=2&offset=5"
 ```
@@ -256,7 +256,7 @@ curl --location --request POST 'localhost:9000/topics/' \
 
 #### Posts
 
-##### You can to get all posts, providing offset and limit if needed:
+##### Possible to get all posts, providing offset and limit if needed:
 ```bash
 GET /posts
 ```
@@ -317,7 +317,7 @@ curl --location --request PUT 'localhost:9000/posts/76ee3770-19e5-41bb-bc78-95ff
 }
 ```
 
-##### Or to delete it:
+##### Or delete it:
 ```bash
 DELETE /posts/secret
 ```
