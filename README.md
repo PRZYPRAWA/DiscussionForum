@@ -42,7 +42,7 @@ When the app is running, you can start sending the requests.
 
 ### Requests
 #### Topics
-To get all topics from database with limit from config file, sorted by last_response:
+##### To get all topics from database with limit from config file, sorted by last_response:
 ```bash
 GET /topics
 ```
@@ -99,7 +99,7 @@ curl "http://localhost:9000/topics?limit=2&offset=5"
 ]
 ```
 
-To get one topic with all posts:
+##### To get one topic with all posts:
 ```bash
 GET /topics/id
 ```
@@ -148,7 +148,7 @@ curl http://localhost:9000/topics/1
 }
 ```
 
-To paginate topic with posts can provide parameters offset, before and after: 
+##### To paginate topic with posts can provide parameters offset, before and after: 
 ```bash
 curl "http://localhost:9000/topics/1?offset=2&after=0&before=2"
 ```
@@ -193,7 +193,7 @@ curl "http://localhost:9000/topics/1?offset=2&after=0&before=2"
 }
 ```
 
-To add post to topic:
+##### To add post to topic:
 ```bash
 POST /topics/id
 ```
@@ -218,7 +218,7 @@ curl --location --request POST 'localhost:9000/topics/1' \
 }
 ```
 
-Or just to add new topic with corresponding post:
+##### Or to just add new topic with corresponding post:
 ```bash
 POST /topics
 ```
@@ -255,7 +255,7 @@ curl --location --request POST 'localhost:9000/topics/' \
 
 #### Posts
 
-You can to get all posts, providing offset and limit if needed:
+##### You can to get all posts, providing offset and limit if needed:
 ```bash
 GET /posts
 ```
@@ -292,7 +292,7 @@ curl --location --request GET 'localhost:9000/posts?offset=10&limit=2' \
 ]
 ```
 
-You can update one post providing its unique secret:
+##### You can update one post providing its unique secret:
 ```bash
 PUT /posts/secret
 ```
@@ -316,7 +316,7 @@ curl --location --request PUT 'localhost:9000/posts/76ee3770-19e5-41bb-bc78-95ff
 }
 ```
 
-Or just delete post providing its secret:
+##### Or to delete it:
 ```bash
 DELETE /posts/secret
 ```
