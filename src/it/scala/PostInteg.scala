@@ -11,14 +11,14 @@ class PostInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with D
   val updatePost = UpdatePost("Test update")
   val invalidUpdatePost = UpdatePost("")
 
-  trait Tests {
+  trait DbConnectionTests {
     val connection = new Connection
     val db = new ForumRepository(connection.database)
     val topicRouter = new ForumRouter(db)
   }
 
   "A PostRouter" should {
-    "update post with valid data" in new Tests {
+    "update post with valid data" in new DbConnectionTests {
       Put("/posts/a8a52c07-1b95-4a7e-8c46-34818e463caa", updatePost) ~> topicRouter.postRoute ~> check {
         status shouldBe StatusCodes.OK
         val resp = responseAs[Post]
@@ -26,7 +26,7 @@ class PostInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with D
       }
     }
 
-    "not update post with invalid data" in new Tests {
+    "not update post with invalid data" in new DbConnectionTests {
       Put("/posts/a8a52c07-1b95-4a7e-8c46-34818e463caa", invalidUpdatePost) ~> topicRouter.postRoute ~> check {
         status shouldBe StatusCodes.BadRequest
         val resp = responseAs[ApiError]
@@ -34,7 +34,7 @@ class PostInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with D
       }
     }
 
-    "not update post with valid data when there is no post with secret" in new Tests {
+    "not update post with valid data when there is no post with secret" in new DbConnectionTests {
       val secret = "123"
       Put("/posts/" + secret, updatePost) ~> topicRouter.postRoute ~> check {
         status shouldBe StatusCodes.NotFound
@@ -43,7 +43,7 @@ class PostInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with D
       }
     }
 
-    "return posts" in new Tests {
+    "return posts" in new DbConnectionTests {
       Get("/posts") ~> topicRouter.postRoute ~> check {
         status shouldBe StatusCodes.OK
       }

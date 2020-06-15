@@ -16,14 +16,14 @@ class TopicInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with 
 
   private var postToDelete: String = ""
 
-  trait Tests {
+  trait DbConnectionTests {
     val connection = new Connection
     val db = new ForumRepository(connection.database)
     val topicRouter = new ForumRouter(db)
   }
 
   "A TopicRouter" should {
-    "add topic and post with valid data and return them" in new Tests {
+    "add topic and post with valid data and return them" in new DbConnectionTests {
       Post("/topics", testCreateTopic) ~> topicRouter.topicRoute ~> check {
         status shouldBe StatusCodes.OK
         val resp = responseAs[TopicPost]
@@ -39,13 +39,13 @@ class TopicInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with 
       }
     }
 
-    "delete post with secret" in new Tests {
+    "delete post with secret" in new DbConnectionTests {
       Delete("/posts/" + postToDelete) ~> topicRouter.postRoute ~> check {
         status shouldBe StatusCodes.OK
       }
     }
 
-    "not add topic and post with invalid data" in new Tests {
+    "not add topic and post with invalid data" in new DbConnectionTests {
       Post("/topics", invalidTestCreateTopic) ~> topicRouter.topicRoute ~> check {
         status shouldBe StatusCodes.BadRequest
         val resp = responseAs[ApiError]
@@ -53,7 +53,7 @@ class TopicInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with 
       }
     }
 
-    "add post to corresponding topic with valid data and return them" in new Tests {
+    "add post to corresponding topic with valid data and return them" in new DbConnectionTests {
       Post("/topics/1", testCreatePost) ~> topicRouter.topicRoute ~> check {
         status shouldBe StatusCodes.OK
         val resp = responseAs[Post]
@@ -66,13 +66,13 @@ class TopicInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with 
       }
     }
 
-    "delete another post with secret" in new Tests {
+    "delete another post with secret" in new DbConnectionTests {
       Delete("/posts/" + postToDelete) ~> topicRouter.postRoute ~> check {
         status shouldBe StatusCodes.OK
       }
     }
 
-    "not add post to corresponding topic with invalid data" in new Tests {
+    "not add post to corresponding topic with invalid data" in new DbConnectionTests {
       Post("/topics/1", invalidTestCreatePost) ~> topicRouter.topicRoute ~> check {
         status shouldBe StatusCodes.BadRequest
         val resp = responseAs[ApiError]
@@ -80,7 +80,7 @@ class TopicInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with 
       }
     }
 
-    "return topic and corresponding posts" in new Tests {
+    "return topic and corresponding posts" in new DbConnectionTests {
       Get("/topics/1") ~> topicRouter.topicRoute ~> check {
         status shouldBe StatusCodes.OK
         val resp = responseAs[TopicPosts]
@@ -89,7 +89,7 @@ class TopicInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with 
       }
     }
 
-    "return topics" in new Tests {
+    "return topics" in new DbConnectionTests {
       Get("/topics") ~> topicRouter.topicRoute ~> check {
         status shouldBe StatusCodes.OK
         val resp = responseAs[Seq[Topic]]
@@ -97,7 +97,7 @@ class TopicInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with 
       }
     }
 
-    "not return topic and corresponding posts when invalid id" in new Tests {
+    "not return topic and corresponding posts when invalid id" in new DbConnectionTests {
       val topicId = Long.MaxValue.toString
       Get("/topics/" + topicId) ~> topicRouter.topicRoute ~> check {
         status shouldBe StatusCodes.NotFound

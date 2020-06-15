@@ -1,15 +1,15 @@
 package main
 
 import akka.http.scaladsl.server.{Directives, Route}
-import database.ForumRepository
 import database.ForumRepository.{NoPost, NoTopic}
+import database.Repository
 import validation._
 
 trait Router {
   def route: Route
 }
 
-class ForumRouter(database: ForumRepository) extends Router with Directives with TopicDirectives with ValidatorDirectives {
+class ForumRouter(database: Repository) extends Router with Directives with TopicDirectives with ValidatorDirectives {
 
   override def route = logRequestResult("akka-http-forum") {
     topicRoute ~ postRoute
