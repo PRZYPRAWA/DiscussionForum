@@ -2,18 +2,19 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import database.{Connection, ForumRepository}
-import main.{CreateDiscussionTopic, CreatePost, ForumRouter, Post, Topic, TopicDirectives, TopicPost, TopicPosts}
-import org.scalatest.BeforeAndAfterEach
+import main._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import validation.ApiError
 
-class TopicInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with Directives with TopicDirectives with BeforeAndAfterEach {
+class TopicInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with Directives with TopicDirectives {
   val testCreateTopic = CreateDiscussionTopic("Test topic", "Test content", "Test username", "test@email.com")
   val invalidTestCreateTopic = CreateDiscussionTopic("Test topic", "Test content", "Test username", "email.com")
 
   val testCreatePost = CreatePost("Test content", "test username", "test@email.om")
   val invalidTestCreatePost = CreatePost("Test content", "test username", "test.com")
+
+  private var postToDelete: String = ""
 
   trait Tests {
     val connection = new Connection
@@ -28,11 +29,19 @@ class TopicInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with 
         val resp = responseAs[TopicPost]
         val (newTopic, newPost) = (resp.topic, resp.post)
 
+        postToDelete = newPost.secret
+
         newTopic.created_by shouldBe testCreateTopic.nick
         newPost.username shouldBe testCreateTopic.nick
         newTopic.topic shouldBe testCreateTopic.topic
         newPost.content shouldBe testCreateTopic.content
         newPost.email shouldBe testCreateTopic.email
+      }
+    }
+
+    "delete post with secret" in new Tests {
+      Delete("/posts/" + postToDelete) ~> topicRouter.postRoute ~> check {
+        status shouldBe StatusCodes.OK
       }
     }
 
@@ -49,9 +58,17 @@ class TopicInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with 
         status shouldBe StatusCodes.OK
         val resp = responseAs[Post]
 
+        postToDelete = resp.secret
+
         resp.username shouldBe testCreatePost.nick
         resp.content shouldBe testCreatePost.content
         resp.email shouldBe testCreatePost.email
+      }
+    }
+
+    "delete another post with secret" in new Tests {
+      Delete("/posts/" + postToDelete) ~> topicRouter.postRoute ~> check {
+        status shouldBe StatusCodes.OK
       }
     }
 
@@ -69,7 +86,6 @@ class TopicInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with 
         val resp = responseAs[TopicPosts]
         assert(resp.posts.nonEmpty)
         resp.topic.id shouldBe resp.posts.head.topic_id
-        resp.topic.created_by shouldBe resp.posts.head.username
       }
     }
 

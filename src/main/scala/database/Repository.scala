@@ -32,7 +32,6 @@ trait Repository {
   def updatePost(postSecret: String, updatePost: UpdatePost): Future[Post]
 
   def deletePost(postSecret: String): Future[Int]
-
 }
 
 object ForumRepository {

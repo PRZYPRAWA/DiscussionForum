@@ -3,12 +3,11 @@ import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import database.{Connection, ForumRepository}
 import main.{ForumRouter, Post, TopicDirectives, UpdatePost}
-import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import validation.ApiError
 
-class PostInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with Directives with TopicDirectives with BeforeAndAfterEach {
+class PostInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with Directives with TopicDirectives {
   val updatePost = UpdatePost("Test update")
   val invalidUpdatePost = UpdatePost("")
 

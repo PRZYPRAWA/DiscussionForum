@@ -35,7 +35,6 @@ case class TopicPosts(topic: Topic, posts: Seq[Post])
 
 case class TopicPost(topic: Topic, post: Post)
 
-
 trait Protocols extends DefaultJsonProtocol with SprayJsonSupport {
 
   implicit object TimestampJsonFormat extends RootJsonFormat[Timestamp] {
