@@ -1,14 +1,14 @@
-package Database
+package database
 
-import AppConfig.Config
+import appConfig.Config
 import slick.jdbc.PostgresProfile.api._
 
 
-trait Connection extends Config {
+class Connection extends Config {
   val connectionUrl: String =
     s"${config.getString("database.url")}" +
     s"?user=${config.getString("database.user")}" +
     s"&password=${config.getString("database.password")}"
 
-  val db = Database.forURL(connectionUrl, driver = config.getString("database.driver"))
+  def database = Database.forURL(connectionUrl, driver = config.getString("database.driver"))
 }

@@ -1,11 +1,10 @@
-package Validation
+package validation
 
-import Main.{CreateDiscussionTopic, CreatePost, Protocols, UpdatePost}
-import akka.http.scaladsl.testkit.ScalatestRouteTest
+import main.{CreateDiscussionTopic, CreatePost, UpdatePost}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-class ValidatorSpec extends AnyWordSpec with Matchers with ScalatestRouteTest with Protocols {
+class ValidatorSpec extends AnyWordSpec with Matchers {
   "ValidatorConsts" should {
     "return None if email is valid" in {
       val validEmail1 = "test@wp.pl"

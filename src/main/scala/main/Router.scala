@@ -1,33 +1,23 @@
-package Main
+package main
 
-import AppConfig.Config
-import Database.Repository.{NoPost, NoTopic}
-import Database.Repository
-import Validation._
-import akka.actor.ActorSystem
-import akka.event.{Logging, LoggingAdapter}
-import akka.http.scaladsl.Http
-import akka.stream.{ActorMaterializer, Materializer}
+import akka.http.scaladsl.server.{Directives, Route}
+import database.ForumRepository
+import database.ForumRepository.{NoPost, NoTopic}
+import validation._
 
-import scala.concurrent.ExecutionContextExecutor
+trait Router {
+  def route: Route
+}
 
-trait Service extends Protocols with TodoDirectives with ValidatorDirectives {
-  implicit val system: ActorSystem
+class ForumRouter(database: ForumRepository) extends Router with Directives with TopicDirectives with ValidatorDirectives {
 
-  implicit def executor: ExecutionContextExecutor
-
-  implicit val materializer: Materializer
-
-  val logger: LoggingAdapter
-  val database = new Repository
-
-  val routes = logRequestResult("akka-http-forum") {
+  override def route = logRequestResult("akka-http-forum") {
     topicRoute ~ postRoute
   }
 
   val topicRoute = pathPrefix("topics") {
     (get & path(LongNumber)) { id =>
-      parameters('before.as[Int].?, 'after.as[Int].?) { (before: Option[Int], after: Option[Int]) =>
+      parameters(Symbol("before").as[Int].?, Symbol("after").as[Int].?) { (before: Option[Int], after: Option[Int]) =>
         parameter("offset".as[Int].?) { offset: Option[Int] =>
           handle(database.topicWithPosts(id, offset, before, after)) {
             case NoTopic(_) => ApiError.topicNotFound(id.toString)
@@ -57,7 +47,7 @@ trait Service extends Protocols with TodoDirectives with ValidatorDirectives {
           }
         }
       } ~
-      (get & parameters('limit.as[Int].?, 'offset.as[Int].?)) { (limit: Option[Int], offset: Option[Int]) =>
+      (get & parameters(Symbol("limit").as[Int].?, Symbol("offset").as[Int].?)) { (limit: Option[Int], offset: Option[Int]) =>
         handleWithGeneric(database.getTopics(limit, offset)) { topics =>
           complete(topics)
         }
@@ -65,7 +55,7 @@ trait Service extends Protocols with TodoDirectives with ValidatorDirectives {
   }
 
   val postRoute = pathPrefix("posts") {
-    (get & parameters('limit.as[Int].?, 'offset.as[Int].?)) { (limit: Option[Int], offset: Option[Int]) =>
+    (get & parameters(Symbol("limit").as[Int].?, Symbol("offset").as[Int].?)) { (limit: Option[Int], offset: Option[Int]) =>
       handleWithGeneric(database.getPosts(limit, offset)) { posts =>
         complete(posts)
       }
@@ -91,15 +81,4 @@ trait Service extends Protocols with TodoDirectives with ValidatorDirectives {
         }
       }
   }
-
-}
-
-object ForumMain extends App with Service with Config {
-  override implicit val system = ActorSystem()
-  override implicit val executor = system.dispatcher
-  override implicit val materializer = ActorMaterializer()
-
-  override val logger = Logging(system, getClass)
-
-  Http().bindAndHandle(routes, config.getString("http.interface"), config.getInt("http.port"))
 }

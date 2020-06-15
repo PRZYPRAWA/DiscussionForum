@@ -1,8 +1,8 @@
-package Database
+package database
 
 import java.sql.Timestamp
 
-import Main.{Post, Topic}
+import main.{Post, Topic}
 import slick.jdbc.PostgresProfile.api._
 import slick.sql.SqlProfile.ColumnOption.SqlType
 

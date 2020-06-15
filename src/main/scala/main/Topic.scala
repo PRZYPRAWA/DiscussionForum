@@ -1,8 +1,8 @@
-package Main
+package main
 
 import java.sql.Timestamp
 
-import Validation.ApiError
+import validation.ApiError
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCode
 import spray.json.{DefaultJsonProtocol, RootJsonFormat, _}

@@ -1,6 +1,6 @@
-package Main
+package main
 
-import Validation.ApiError
+import validation.ApiError
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse}
 import akka.http.scaladsl.server.{Directive1, Directives}
 import spray.json._
@@ -8,7 +8,7 @@ import spray.json._
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-trait TodoDirectives extends Directives with Protocols {
+trait TopicDirectives extends Directives with Protocols {
 
   def handle[T](f: Future[T])(e: Throwable => ApiError): Directive1[T] = onComplete(f) flatMap {
     case Success(t) =>

@@ -1,6 +1,6 @@
-package Validation
+package validation
 
-import Main.Protocols
+import main.Protocols
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse}
 import akka.http.scaladsl.server.{Directive0, Directives}
 import spray.json._

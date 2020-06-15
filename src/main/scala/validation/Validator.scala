@@ -1,7 +1,7 @@
-package Validation
+package validation
 
-import AppConfig.Config
-import Main.{CreateDiscussionTopic, CreatePost, UpdatePost}
+import appConfig.Config
+import main.{CreateDiscussionTopic, CreatePost, UpdatePost}
 
 trait Validator[T] {
   def validate(t: T): Option[ApiError]

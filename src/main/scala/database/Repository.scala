@@ -1,18 +1,18 @@
-package Database
+package database
 
 import java.sql.Timestamp
 import java.time.LocalDateTime
 import java.util.UUID
 
-import AppConfig.Config
-import Main._
+import appConfig.Config
+import main._
 import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 
-trait ForumRepository {
+trait Repository {
 
   def getTopics(limit: Option[Int], offset: Option[Int]): Future[Seq[Topic]]
 
@@ -34,7 +34,7 @@ trait ForumRepository {
 
 }
 
-object Repository {
+object ForumRepository {
 
   case class NoPost(secret: String) extends Exception("")
 
@@ -42,9 +42,9 @@ object Repository {
 
 }
 
-class Repository extends Connection with ForumRepository with Config {
+class ForumRepository(database: Database) extends Repository with Config {
 
-  import Repository._
+  import ForumRepository._
 
   val LIMIT = config.getInt("app.limit")
   val AFTER = LIMIT * 2 / 3
@@ -60,7 +60,7 @@ class Repository extends Connection with ForumRepository with Config {
     val tmpOffset = offset.getOrElse(0)
     val off = if (tmpOffset < 0) 0 else tmpOffset
 
-    db.run(topics.sortBy(_.last_response.desc).drop(off).take(lim).result)
+    database.run(topics.sortBy(_.last_response.desc).drop(off).take(lim).result)
   }
 
 
@@ -71,7 +71,7 @@ class Repository extends Connection with ForumRepository with Config {
     val tmpOffset = offset.getOrElse(0)
     val off = if (tmpOffset < 0) 0 else tmpOffset
 
-    db.run(posts.drop(off).take(lim).result)
+    database.run(posts.drop(off).take(lim).result)
   }
 
   override def topicWithPosts(topicId: Long,
@@ -94,7 +94,7 @@ class Repository extends Connection with ForumRepository with Config {
     val off1 = if (tmpOff < 0) 0 else tmpOff
     val off2 = if (off1 - bef2 < 0) 0 else off1 - bef2
 
-    db.run {
+    database.run {
       for {
         topic <- topics.filter(_.id === topicId).result.headOption
         posts <- topic match {
@@ -106,7 +106,7 @@ class Repository extends Connection with ForumRepository with Config {
             .result
           case None => DBIO.failed(NoTopic(topicId.toString))
         }
-      } yield Main.TopicPosts(topic.get, posts)
+      } yield main.TopicPosts(topic.get, posts)
     }
   }
 
@@ -120,7 +120,7 @@ class Repository extends Connection with ForumRepository with Config {
       date
     )
 
-    db.run {
+    database.run {
       for {
         newTopic <- topics returning topics += topic
         newPost <- {
@@ -135,11 +135,11 @@ class Repository extends Connection with ForumRepository with Config {
 
           posts returning posts += post
         }
-      } yield Main.TopicPost(newTopic, newPost)
+      } yield main.TopicPost(newTopic, newPost)
     }
   }
 
-  override def addPost(topicId: Long, createPost: CreatePost): Future[Post] = db.run {
+  override def addPost(topicId: Long, createPost: CreatePost): Future[Post] = database.run {
     val date = Timestamp.valueOf(LocalDateTime.now())
     for {
       tid <- topics.filter(_.id === topicId).result.headOption
@@ -161,7 +161,7 @@ class Repository extends Connection with ForumRepository with Config {
     } yield newPost
   }
 
-  override def updatePost(postSecret: String, updatePost: UpdatePost): Future[Post] = db.run {
+  override def updatePost(postSecret: String, updatePost: UpdatePost): Future[Post] = database.run {
     for {
       exists <- posts.filter(_.secret === postSecret).result.headOption
       post <- exists match {
@@ -172,15 +172,15 @@ class Repository extends Connection with ForumRepository with Config {
     } yield post
   }
 
-  override def deletePost(postSecret: String): Future[Int] = db.run {
+  override def deletePost(postSecret: String): Future[Int] = database.run {
     posts.filter(_.secret === postSecret).delete
   }
 
-  override def getPost(postId: Long): Future[Option[Post]] = db.run {
+  override def getPost(postId: Long): Future[Option[Post]] = database.run {
     posts.filter(_.id === postId).result.headOption
   }
 
-  override def getTopic(topicId: Long): Future[Option[Topic]] = db.run {
+  override def getTopic(topicId: Long): Future[Option[Topic]] = database.run {
     topics.filter(_.id === topicId).result.headOption
   }
 }

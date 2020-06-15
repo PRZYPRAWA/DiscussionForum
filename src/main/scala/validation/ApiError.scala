@@ -1,4 +1,4 @@
-package Validation
+package validation
 
 import akka.http.scaladsl.model.{StatusCode, StatusCodes}
 
