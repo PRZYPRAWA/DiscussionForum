@@ -8,7 +8,6 @@ lazy val root = (project in file("."))
   .configs(IntegrationTest)
   .settings(
     Defaults.itSettings,
-    //libraryDependencies += scalaTest % "it,test"
     libraryDependencies ++= {
       val scalaTestV = "3.1.2"
       val akkaHttpV = "10.1.12"
