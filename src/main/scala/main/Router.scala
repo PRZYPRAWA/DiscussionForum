@@ -1,17 +1,14 @@
 package main
 
-import akka.http.scaladsl.server.{Directives, Route}
+import akka.http.scaladsl.server.Directives
 import database.ForumRepository.{NoPost, NoTopic}
 import database.Repository
 import validation._
+import TPValuesImplicits._
 
-trait Router {
-  def route: Route
-}
+class ForumRouter(database: Repository) extends Directives with TopicDirectives with ValidatorDirectives {
 
-class ForumRouter(database: Repository) extends Router with Directives with TopicDirectives with ValidatorDirectives {
-
-  override def route = logRequestResult("akka-http-forum") {
+  def route = logRequestResult("akka-http-forum") {
     topicRoute ~ postRoute
   }
 
@@ -19,7 +16,7 @@ class ForumRouter(database: Repository) extends Router with Directives with Topi
     (get & path(LongNumber)) { id =>
       parameters(Symbol("before").as[Int].?, Symbol("after").as[Int].?) { (before: Option[Int], after: Option[Int]) =>
         parameter("offset".as[Int].?) { offset: Option[Int] =>
-          handle(database.topicWithPosts(id, offset, before, after)) {
+          handle(database.topicWithPosts(id.toId, offset, before, after)) {
             case NoTopic(_) => ApiError.topicNotFound(id.toString)
             case _ => ApiError.generic
           } { posts =>
@@ -31,7 +28,7 @@ class ForumRouter(database: Repository) extends Router with Directives with Topi
       (post & path(LongNumber)) { id =>
         entity(as[CreatePost]) { createPost =>
           validateWith(CreatePostValidator)(createPost) {
-            handle(database.addPost(id, createPost)) {
+            handle(database.addPost(id.toId, createPost)) {
               case NoTopic(_) => ApiError.topicNotFound(id.toString)
               case _ => ApiError.generic
             } { posts =>
@@ -40,7 +37,7 @@ class ForumRouter(database: Repository) extends Router with Directives with Topi
           }
         }
       } ~
-      (post & entity(as[CreateDiscussionTopic])) { createDiscussionTopic =>
+      (post & entity(as[CreateTopic])) { createDiscussionTopic =>
         validateWith(CreateTopicValidator)(createDiscussionTopic) {
           handleWithGeneric(database.addTopic(createDiscussionTopic)) { topic =>
             complete(topic)
@@ -63,7 +60,7 @@ class ForumRouter(database: Repository) extends Router with Directives with Topi
       (put & path(Segment)) { secret =>
         entity(as[UpdatePost]) { updatePost =>
           validateWith(UpdatePostValidator)(updatePost) {
-            handle(database.updatePost(secret, updatePost)) {
+            handle(database.updatePost(secret.toSecret, updatePost)) {
               case NoPost(_) => ApiError.postNotFound(secret)
               case _ => ApiError.generic
             } { post =>
@@ -73,7 +70,7 @@ class ForumRouter(database: Repository) extends Router with Directives with Topi
         }
       } ~
       (delete & path(Segment)) { secret =>
-        handle(database.deletePost(secret)) {
+        handle(database.deletePost(secret.toSecret)) {
           case NoPost(_) => ApiError.postNotFound(secret)
           case _ => ApiError.generic
         } { rowsAffected =>

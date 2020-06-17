@@ -1,72 +1,82 @@
 package validation
 
 import appConfig.Config
-import main.{CreateDiscussionTopic, CreatePost, UpdatePost}
+import main.{CreatePost, CreateTopic, TPValues, UpdatePost}
 
 trait Validator[T] {
   def validate(t: T): Option[ApiError]
+
+  def getFirstDefined[A](s: Seq[Option[A]]): Option[A] = s match {
+    case Nil =>
+      None
+    case option :: _ if option.isDefined =>
+      option
+    case _ =>
+      getFirstDefined(s.tail)
+  }
+
 }
 
 object ValidatorConsts extends Config {
   val maxContentLength = config.getInt("app.maxContentLength")
   val maxUsernameLength = config.getInt("app.maxUsernameLength")
   val maxTopicLength = config.getInt("app.maxTopicLength")
-  val emailRegex = "^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$"
+  val maxEmailLength = config.getInt("app.maxEmailLength")
 
-  def validateEmail(email: String) = {
-    if (!email.matches(emailRegex))
-      Some(ApiError.wrongEmailFormat)
+  def validateEmail(email: TPValues.Email) = {
+    if (email.value.isEmpty)
+      Some(ApiError.emptyEmailField)
+    else if (email.value.length > maxEmailLength)
+      Some(ApiError.emailTooLong)
     else None
   }
 
-  def validateContent(content: String) = {
-    if (content.isEmpty)
+  def validateContent(content: TPValues.Content) = {
+    if (content.value.isEmpty)
       Some(ApiError.emptyContentField)
-    else if (content.length > maxContentLength)
+    else if (content.value.length > maxContentLength)
       Some(ApiError.contentTooLong)
     else
       None
   }
 
-  def validateUsername(username: String) = {
-    if (username.isEmpty)
+  def validateUsername(username: TPValues.Username) = {
+    if (username.value.isEmpty)
       Some(ApiError.emptyUsernameField)
-    else if (username.length > maxUsernameLength)
+    else if (username.value.length > maxUsernameLength)
       Some(ApiError.usernameTooLong)
     else
       None
   }
 
-  def validateTopic(topic: String) = {
-    if (topic.isEmpty)
+  def validateTopic(topic: TPValues.Topic) = {
+    if (topic.value.isEmpty)
       Some(ApiError.emptyTopicField)
-    else if (topic.length > maxTopicLength)
+    else if (topic.value.length > maxTopicLength)
       Some(ApiError.topicTooLong)
     else
       None
   }
 }
 
-object CreateTopicValidator extends Validator[CreateDiscussionTopic] {
+object CreateTopicValidator extends Validator[CreateTopic] {
 
   import ValidatorConsts._
 
-  def validate(createDiscussionTopic: CreateDiscussionTopic): Option[ApiError] = {
-    val validatedUsername = validateUsername(createDiscussionTopic.nick)
+  def validate(createDiscussionTopic: CreateTopic): Option[ApiError] = {
+    val validatedUsername = validateUsername(createDiscussionTopic.username)
     val validatedTopic = validateTopic(createDiscussionTopic.topic)
     val validatedContent = validateContent(createDiscussionTopic.content)
     val validatedEmail = validateEmail(createDiscussionTopic.email)
 
-    if (validatedUsername.isDefined)
-      validatedUsername
-    else if (validatedTopic.isDefined)
-      validatedTopic
-    else if (validatedContent.isDefined)
-      validatedContent
-    else if (validatedEmail.isDefined)
-      validatedEmail
-    else
-      None
+    getFirstDefined(
+      Seq(
+        validatedUsername,
+        validatedTopic,
+        validatedContent,
+        validatedEmail
+      )
+    )
   }
 }
 
@@ -82,17 +92,17 @@ object CreatePostValidator extends Validator[CreatePost] {
   import ValidatorConsts._
 
   def validate(createPost: CreatePost): Option[ApiError] = {
-    val validatedUsername = validateUsername(createPost.nick)
+    val validatedUsername = validateUsername(createPost.username)
     val validatedContent = validateContent(createPost.content)
     val validatedEmail = validateEmail(createPost.email)
 
-    if (validatedUsername.isDefined)
-      validatedUsername
-    else if (validatedContent.isDefined)
-      validatedContent
-    else if (validatedEmail.isDefined)
-      validatedEmail
-    else
-      None
+    getFirstDefined(
+      Seq(
+        validatedUsername,
+        validatedContent,
+        validatedEmail
+      )
+    )
   }
 }
+

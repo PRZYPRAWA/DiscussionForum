@@ -1,71 +1,66 @@
 package main
 
 import java.sql.Timestamp
-
-import validation.ApiError
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import akka.http.scaladsl.model.StatusCode
-import spray.json.{DefaultJsonProtocol, RootJsonFormat, _}
+import slick.lifted.MappedTo
 
 case class Topic(
-                  topic: String,
-                  created_by: String,
+                  topic: TPValues.Topic,
+                  created_by: TPValues.Username,
                   created: Timestamp,
                   last_response: Timestamp,
-                  id: Long = 0L
+                  id: TPValues.Id = TPValues.Id(0L)
                 )
 
 case class Post(
-                 content: String,
-                 username: String,
-                 email: String,
+                 content: TPValues.Content,
+                 username: TPValues.Username,
+                 email: TPValues.Email,
                  created: Timestamp,
-                 secret: String,
-                 topic_id: Long = 0L,
-                 id: Long = 0L
+                 secret: TPValues.Secret,
+                 topic_id: TPValues.Id = TPValues.Id(0L),
+                 id: TPValues.Id = TPValues.Id(0L),
                )
 
-case class CreateDiscussionTopic(topic: String, content: String, nick: String, email: String)
+case class CreateTopic(
+                                  topic: TPValues.Topic,
+                                  content: TPValues.Content,
+                                  username: TPValues.Username,
+                                  email: TPValues.Email
+                                )
 
-case class CreatePost(content: String, nick: String, email: String)
+case class CreatePost(content: TPValues.Content, username: TPValues.Username, email: TPValues.Email)
 
-case class UpdatePost(content: String)
+case class UpdatePost(content: TPValues.Content)
 
 case class TopicPosts(topic: Topic, posts: Seq[Post])
 
 case class TopicPost(topic: Topic, post: Post)
 
-trait Protocols extends DefaultJsonProtocol with SprayJsonSupport {
+object TPValues {
 
-  implicit object TimestampJsonFormat extends RootJsonFormat[Timestamp] {
-    def write(t: Timestamp) = JsString(t.toString)
+  case class Topic(value: String) extends AnyVal with MappedTo[String]
 
-    def read(value: JsValue) = value match {
-      case JsString(value) =>
-        Timestamp.valueOf(value)
-      case _ => deserializationError("Timestamp expected")
-    }
+  case class Username(value: String) extends AnyVal with MappedTo[String]
+
+  case class Id(value: Long) extends AnyVal with MappedTo[Long]
+
+  case class Content(value: String) extends AnyVal with MappedTo[String]
+
+  case class Email(value: String) extends AnyVal with MappedTo[String]
+
+  case class Secret(value: String) extends AnyVal with MappedTo[String]
+
+
+
+}
+
+object TPValuesImplicits {
+  import main.TPValues.{Id, Secret}
+
+  implicit class StringToSecret(s : String) {
+    def toSecret = Secret(s)
   }
-
-  implicit object StatusCodeFormat extends RootJsonFormat[StatusCode] {
-    def write(s: StatusCode) = JsNumber(s.intValue())
-
-    def read(value: JsValue) = value match {
-      case JsNumber(value) =>
-        StatusCode.int2StatusCode(value.intValue)
-      case _ => deserializationError("StatusCode expected")
-    }
+  implicit class LongToId(l: Long) {
+    def toId = Id(l)
   }
-
-  implicit val topicFormat = jsonFormat5(Topic.apply)
-  implicit val createDiscussionTopicFormat = jsonFormat4(CreateDiscussionTopic.apply)
-
-  implicit val postFormat = jsonFormat7(Post.apply)
-  implicit val createPostFormat = jsonFormat3(CreatePost.apply)
-  implicit val updatePostFormat = jsonFormat1(UpdatePost.apply)
-
-  implicit val topicPostsFormat = jsonFormat2(TopicPosts.apply)
-  implicit val topicPostFormat = jsonFormat2(TopicPost.apply)
-
-  implicit val apiErrorFormat = jsonFormat2(ApiError.apply)
 }

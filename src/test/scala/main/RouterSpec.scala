@@ -84,7 +84,7 @@ class RouterSpec extends AnyWordSpec with Matchers with ScalatestRouteTest with 
   "A ForumRouter" should {
     "create topic and post with valid data" in new RepoMock {
 
-      db.addTopic _ expects createTopic returns Future.successful(TopicPost(topic1, post1))
+      db.addTopic _ expects createTopic returns Future.successful(TPValues(topic1, post1))
 
       Post("/topics", createTopic) ~> forumRouter.route ~> check {
         status shouldBe StatusCodes.OK

@@ -2,17 +2,18 @@ package database
 
 import java.sql.Timestamp
 
-import main.{Post, Topic}
+
+import main.{Post, TPValues, Topic}
 import slick.jdbc.PostgresProfile.api._
 import slick.sql.SqlProfile.ColumnOption.SqlType
 
 class TopicTable(tag: Tag) extends Table[Topic](tag, "topic") {
 
-  def id = column[Long]("id", SqlType("SERIAL"), O.PrimaryKey, O.AutoInc)
+  def id = column[TPValues.Id]("id", SqlType("SERIAL"), O.PrimaryKey, O.AutoInc)
 
-  def topic = column[String]("topic")
+  def topic = column[TPValues.Topic]("topic")
 
-  def created_by = column[String]("created_by")
+  def created_by = column[TPValues.Username]("created_by")
 
   def created = column[Timestamp]("created")
 
@@ -24,19 +25,19 @@ class TopicTable(tag: Tag) extends Table[Topic](tag, "topic") {
 
 class PostTable(tag: Tag) extends Table[Post](tag, "post") {
 
-  def id = column[Long]("id", SqlType("SERIAL"), O.PrimaryKey, O.AutoInc)
+  def id = column[TPValues.Id]("id", SqlType("SERIAL"), O.PrimaryKey, O.AutoInc)
 
-  def topic_id = column[Long]("topic_id")
+  def topic_id = column[TPValues.Id]("topic_id")
 
-  def content = column[String]("content")
+  def content = column[TPValues.Content]("content")
 
-  def username = column[String]("username")
+  def username = column[TPValues.Username]("username")
 
-  def email = column[String]("email")
+  def email = column[TPValues.Email]("email")
 
   def created = column[Timestamp]("created")
 
-  def secret = column[String]("secret")
+  def secret = column[TPValues.Secret]("secret")
 
   def * = (content, username, email, created, secret, topic_id, id).mapTo[Post]
 

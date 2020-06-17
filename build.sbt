@@ -4,6 +4,7 @@ scalaVersion := "2.13.1"
 
 scalacOptions := Seq("-unchecked", "-deprecation")
 
+
 lazy val root = (project in file("."))
   .configs(IntegrationTest)
   .settings(
@@ -25,7 +26,9 @@ lazy val root = (project in file("."))
         "org.scalatest" %% "scalatest" % scalaTestV % "it,test",
         "org.scalamock" %% "scalamock" % scalaMockV % "test",
         "org.postgresql" % "postgresql" % postgresV,
-        "com.typesafe.slick" %% "slick" % slickV
+        "com.typesafe.slick" %% "slick" % slickV,
+        "org.scala-lang" % "scala-reflect" % "2.13.1"
       )
     }
+
   )

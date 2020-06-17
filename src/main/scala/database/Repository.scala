@@ -19,26 +19,26 @@ trait Repository {
 
   def getPosts(limit: Option[Int], offset: Option[Int]): Future[Seq[Post]]
 
-  def getPost(postId: Long): Future[Option[Post]]
+  def getPost(postId: TPValues.Id): Future[Option[Post]]
 
-  def getTopic(topicId: Long): Future[Option[Topic]]
+  def getTopic(topicId: TPValues.Id): Future[Option[Topic]]
 
-  def topicWithPosts(topicId: Long, offset: Option[Int], before: Option[Int], after: Option[Int]): Future[TopicPosts]
+  def topicWithPosts(topicId: TPValues.Id, offset: Option[Int], before: Option[Int], after: Option[Int]): Future[TopicPosts]
 
-  def addTopic(createTopic: CreateDiscussionTopic): Future[TopicPost]
+  def addTopic(createTopic: CreateTopic): Future[TopicPost]
 
-  def addPost(topicId: Long, createPost: CreatePost): Future[Post]
+  def addPost(topicId: TPValues.Id, createPost: CreatePost): Future[Post]
 
-  def updatePost(postSecret: String, updatePost: UpdatePost): Future[Post]
+  def updatePost(postSecret: TPValues.Secret, updatePost: UpdatePost): Future[Post]
 
-  def deletePost(postSecret: String): Future[Int]
+  def deletePost(postSecret: TPValues.Secret): Future[Int]
 }
 
 object ForumRepository {
 
-  case class NoPost(secret: String) extends Exception("")
+  case class NoPost(secret: TPValues.Secret) extends Exception("")
 
-  case class NoTopic(id: String) extends Exception("")
+  case class NoTopic(id: TPValues.Id) extends Exception("")
 
 }
 
@@ -82,7 +82,7 @@ class ForumRepository(database: Database) extends Repository with Config {
     else (aft, bef)
   }
 
-  override def topicWithPosts(topicId: Long,
+  override def topicWithPosts(topicId: TPValues.Id,
                               offset: Option[Int] = None,
                               before: Option[Int] = None,
                               after: Option[Int] = None): Future[TopicPosts] = {
@@ -109,18 +109,18 @@ class ForumRepository(database: Database) extends Repository with Config {
             .drop(off2)
             .take(aft2 + bef2 + 1)
             .result
-          case None => DBIO.failed(NoTopic(topicId.toString))
+          case None => DBIO.failed(NoTopic(topicId))
         }
       } yield main.TopicPosts(topic.get, posts)
     }
   }
 
 
-  override def addTopic(createTopic: CreateDiscussionTopic): Future[TopicPost] = {
+  override def addTopic(createTopic: CreateTopic): Future[TopicPost] = {
     val date = Timestamp.valueOf(LocalDateTime.now())
     val topic = Topic(
       createTopic.topic,
-      createTopic.nick,
+      createTopic.username,
       date,
       date
     )
@@ -131,10 +131,10 @@ class ForumRepository(database: Database) extends Repository with Config {
         newPost <- {
           val post = Post(
             createTopic.content,
-            createTopic.nick,
+            createTopic.username,
             createTopic.email,
             date,
-            UUID.randomUUID().toString,
+            TPValues.Secret(UUID.randomUUID().toString),
             newTopic.id
           )
 
@@ -144,7 +144,7 @@ class ForumRepository(database: Database) extends Repository with Config {
     }
   }
 
-  override def addPost(topicId: Long, createPost: CreatePost): Future[Post] = database.run {
+  override def addPost(topicId: TPValues.Id, createPost: CreatePost): Future[Post] = database.run {
     val date = Timestamp.valueOf(LocalDateTime.now())
     for {
       tid <- topics.filter(_.id === topicId).result.headOption
@@ -152,21 +152,21 @@ class ForumRepository(database: Database) extends Repository with Config {
         case Some(_) =>
           val post = Post(
             createPost.content,
-            createPost.nick,
+            createPost.username,
             createPost.email,
             date,
-            UUID.randomUUID().toString,
+            TPValues.Secret(UUID.randomUUID().toString),
             topicId
           )
 
           topics.filter(_.id === topicId).map(_.last_response).update(date) >>
             (posts returning posts += post)
-        case None => DBIO.failed(NoTopic(topicId.toString))
+        case None => DBIO.failed(NoTopic(topicId))
       }
     } yield newPost
   }
 
-  override def updatePost(postSecret: String, updatePost: UpdatePost): Future[Post] = database.run {
+  override def updatePost(postSecret: TPValues.Secret, updatePost: UpdatePost): Future[Post] = database.run {
     for {
       exists <- posts.filter(_.secret === postSecret).result.headOption
       post <- exists match {
@@ -177,15 +177,15 @@ class ForumRepository(database: Database) extends Repository with Config {
     } yield post
   }
 
-  override def deletePost(postSecret: String): Future[Int] = database.run {
+  override def deletePost(postSecret: TPValues.Secret): Future[Int] = database.run {
     posts.filter(_.secret === postSecret).delete
   }
 
-  override def getPost(postId: Long): Future[Option[Post]] = database.run {
+  override def getPost(postId: TPValues.Id): Future[Option[Post]] = database.run {
     posts.filter(_.id === postId).result.headOption
   }
 
-  override def getTopic(topicId: Long): Future[Option[Topic]] = database.run {
+  override def getTopic(topicId: TPValues.Id): Future[Option[Topic]] = database.run {
     topics.filter(_.id === topicId).result.headOption
   }
 }

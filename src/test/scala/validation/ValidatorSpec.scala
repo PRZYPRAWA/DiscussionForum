@@ -1,6 +1,6 @@
 package validation
 
-import main.{CreateDiscussionTopic, CreatePost, UpdatePost}
+import main.{CreateTopic, CreatePost, UpdatePost}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -90,7 +90,7 @@ class ValidatorSpec extends AnyWordSpec with Matchers {
   }
 
   "CreateTopicValidator" should {
-    "return None if CreateDiscussionTopic is valid" in {
+    "return None if CreateTopic is valid" in {
       val createTopic = CreateDiscussionTopic("test", "test", "test", "test@wp.pl")
 
       val validatedCreateTopic = CreateTopicValidator.validate(createTopic)
@@ -98,7 +98,7 @@ class ValidatorSpec extends AnyWordSpec with Matchers {
       validatedCreateTopic shouldBe None
     }
 
-    "return Some(ApiError) if CreateDiscussionTopic is invalid" in {
+    "return Some(ApiError) if CreateTopic is invalid" in {
       val createTopic1 = CreateDiscussionTopic("", "test", "test", "test@wp.pl")
       val createTopic2 = CreateDiscussionTopic("test", "", "test", "test@wp.pl")
       val createTopic3 = CreateDiscussionTopic("test", "test", "", "test@wp.pl")
@@ -125,7 +125,7 @@ class ValidatorSpec extends AnyWordSpec with Matchers {
       validatedUpdate shouldBe None
     }
 
-    "return Some(ApiError) if CreateDiscussionTopic is invalid" in {
+    "return Some(ApiError) if CreateTopic is invalid" in {
       val updateInvalid = UpdatePost("")
 
       val validatedUpdatePost = UpdatePostValidator.validate(updateInvalid)
@@ -143,7 +143,7 @@ class ValidatorSpec extends AnyWordSpec with Matchers {
       validatedCreatePost shouldBe None
     }
 
-    "return Some(ApiError) if CreateDiscussionTopic is invalid" in {
+    "return Some(ApiError) if CreateTopic is invalid" in {
       val createPostValid1 = CreatePost("", "test", "test")
       val createPostValid2 = CreatePost("test", "", "test")
       val createPostValid3 = CreatePost("test", "test", "")
