@@ -6,10 +6,11 @@ import main.{ForumRouter, Post, TopicDirectives, UpdatePost}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import validation.ApiError
+import main.TPValuesImplicits._
 
 class PostInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with Directives with TopicDirectives {
-  val updatePost = UpdatePost("Test update")
-  val invalidUpdatePost = UpdatePost("")
+  val updatePost = UpdatePost("Test update".toContent)
+  val invalidUpdatePost = UpdatePost("".toContent)
 
   trait DbConnectionTests {
     val connection = new Connection

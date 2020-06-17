@@ -6,13 +6,14 @@ import main._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import validation.ApiError
+import TPValuesImplicits._
 
 class TopicInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with Directives with TopicDirectives {
-  val testCreateTopic = CreateDiscussionTopic("Test topic", "Test content", "Test username", "test@email.com")
-  val invalidTestCreateTopic = CreateDiscussionTopic("Test topic", "Test content", "Test username", "email.com")
+  val testCreateTopic = CreateTopic("Test topic".toTopic, "Test content".toContent, "Test username".toUsername, "test@email.com".toEmail)
+  val invalidTestCreateTopic = CreateTopic("Test topic".toTopic, "Test content".toContent, "Test username".toUsername, "email.com".toEmail)
 
-  val testCreatePost = CreatePost("Test content", "test username", "test@email.om")
-  val invalidTestCreatePost = CreatePost("Test content", "test username", "test.com")
+  val testCreatePost = CreatePost("Test content".toContent, "test username".toUsername, "test@email.om".toEmail)
+  val invalidTestCreatePost = CreatePost("Test content".toContent, "test username".toUsername, "test.com".toEmail)
 
   private var postToDelete: String = ""
 
@@ -29,10 +30,10 @@ class TopicInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with 
         val resp = responseAs[TopicPost]
         val (newTopic, newPost) = (resp.topic, resp.post)
 
-        postToDelete = newPost.secret
+        postToDelete = newPost.secret.value
 
-        newTopic.created_by shouldBe testCreateTopic.nick
-        newPost.username shouldBe testCreateTopic.nick
+        newTopic.created_by shouldBe testCreateTopic.username
+        newPost.username shouldBe testCreateTopic.username
         newTopic.topic shouldBe testCreateTopic.topic
         newPost.content shouldBe testCreateTopic.content
         newPost.email shouldBe testCreateTopic.email
@@ -58,9 +59,9 @@ class TopicInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with 
         status shouldBe StatusCodes.OK
         val resp = responseAs[Post]
 
-        postToDelete = resp.secret
+        postToDelete = resp.secret.value
 
-        resp.username shouldBe testCreatePost.nick
+        resp.username shouldBe testCreatePost.username
         resp.content shouldBe testCreatePost.content
         resp.email shouldBe testCreatePost.email
       }
