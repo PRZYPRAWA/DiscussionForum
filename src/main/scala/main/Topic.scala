@@ -1,6 +1,7 @@
 package main
 
 import java.sql.Timestamp
+
 import slick.lifted.MappedTo
 
 case class Topic(
@@ -55,12 +56,28 @@ object TPValues {
 }
 
 object TPValuesImplicits {
-  import main.TPValues.{Id, Secret}
+  import main.TPValues._
 
   implicit class StringToSecret(s : String) {
     def toSecret = Secret(s)
   }
   implicit class LongToId(l: Long) {
     def toId = Id(l)
+  }
+
+  implicit class StringToEmail(s:String) {
+    def toEmail = Email(s)
+  }
+
+  implicit class StringToContent(s:String) {
+    def toContent = Content(s)
+  }
+
+  implicit class StringToTopic(s:String) {
+    def toTopic = TPValues.Topic(s)
+  }
+
+  implicit class StringToUsername(s:String) {
+    def toUsername = Username(s)
   }
 }

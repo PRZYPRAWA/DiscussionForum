@@ -21,6 +21,8 @@ object ApiError {
 
   val emailTooLong: ApiError = new ApiError(StatusCodes.BadRequest, "The mail field is too long.")
 
+  val wrongEmailFormat: ApiError = new ApiError(StatusCodes.BadRequest, "The mail field is invalid.")
+
   val emptyUsernameField: ApiError = new ApiError(StatusCodes.BadRequest, "The username field must not be empty.")
 
   val wrongUsernameFormat: ApiError = new ApiError(StatusCodes.BadRequest, "The username field is invalid.")
