@@ -7,6 +7,7 @@ import main.{Post, TPValues, Topic}
 import slick.jdbc.PostgresProfile.api._
 import slick.sql.SqlProfile.ColumnOption.SqlType
 
+
 class TopicTable(tag: Tag) extends Table[Topic](tag, "topic") {
 
   def id = column[TPValues.Id]("id", SqlType("SERIAL"), O.PrimaryKey, O.AutoInc)
@@ -44,3 +45,5 @@ class PostTable(tag: Tag) extends Table[Post](tag, "post") {
   def topic_fk = foreignKey("topic", topic_id, TableQuery[TopicTable])(_.id, onUpdate = ForeignKeyAction.NoAction, onDelete = ForeignKeyAction.NoAction)
 
 }
+
+

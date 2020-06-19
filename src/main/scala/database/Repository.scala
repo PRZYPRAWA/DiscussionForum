@@ -5,8 +5,8 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 import appConfig.Config
+import database.Queries.{NoPost, NoTopic}
 import main._
-import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -34,7 +34,7 @@ trait Repository {
   def deletePost(postSecret: TPValues.Secret): Future[Int]
 }
 
-object ForumRepository {
+object Queries {
 
   case class NoPost(secret: TPValues.Secret) extends Exception("")
 
@@ -42,9 +42,8 @@ object ForumRepository {
 
 }
 
-class ForumRepository(database: Database) extends Repository with Config {
-
-  import ForumRepository._
+class Queries(implicit val profile: DatabaseModule) extends Config { //Repository with Config {
+  import profile.profile.api._
 
   val LIMIT = config.getInt("app.limit")
   val AFTER = LIMIT * 2 / 3
@@ -53,7 +52,7 @@ class ForumRepository(database: Database) extends Repository with Config {
   lazy val topics = TableQuery[TopicTable]
   lazy val posts = TableQuery[PostTable]
 
-  override def getTopics(limit: Option[Int] = None, offset: Option[Int] = None): Future[Seq[Topic]] = {
+  def getTopics(limit: Option[Int] = None, offset: Option[Int] = None) = {
     val tmpLimit = limit.getOrElse(0)
     val lim = if (tmpLimit <= 0 || tmpLimit > LIMIT) LIMIT else tmpLimit
 
@@ -61,18 +60,18 @@ class ForumRepository(database: Database) extends Repository with Config {
     val tmpOffset = offset.getOrElse(0)
     val off = max(0, tmpOffset)
 
-    database.run(topics.sortBy(_.last_response.desc).drop(off).take(lim).result)
+    topics.sortBy(_.last_response.desc).drop(off).take(lim).result
   }
 
 
-  override def getPosts(limit: Option[Int] = None, offset: Option[Int] = None): Future[Seq[Post]] = {
+  def getPosts(limit: Option[Int] = None, offset: Option[Int] = None) = {
     val tmpLimit = limit.getOrElse(0)
     val lim = if (tmpLimit <= 0 || tmpLimit > LIMIT) LIMIT else tmpLimit
 
     val tmpOffset = offset.getOrElse(0)
     val off = max(0, tmpOffset)
 
-    database.run(posts.drop(off).take(lim).result)
+    posts.drop(off).take(lim).result
   }
 
   private def countAfterBefore(aft: Int, bef: Int): (Int, Int) = {
@@ -82,10 +81,10 @@ class ForumRepository(database: Database) extends Repository with Config {
     else (aft, bef)
   }
 
-  override def topicWithPosts(topicId: TPValues.Id,
-                              offset: Option[Int] = None,
-                              before: Option[Int] = None,
-                              after: Option[Int] = None): Future[TopicPosts] = {
+  def topicWithPosts(topicId: TPValues.Id,
+                     offset: Option[Int] = None,
+                     before: Option[Int] = None,
+                     after: Option[Int] = None) = {
     val tmpBefore = before.getOrElse(0)
     val bef1 = if (tmpBefore < 0 || tmpBefore > BEFORE) BEFORE else tmpBefore
 
@@ -99,7 +98,7 @@ class ForumRepository(database: Database) extends Repository with Config {
     val off1 = max(0, tmpOff)
     val off2 = max(0, off1 - bef2)
 
-    database.run {
+    {
       for {
         topic <- topics.filter(_.id === topicId).result.headOption
         posts <- topic match {
@@ -116,7 +115,7 @@ class ForumRepository(database: Database) extends Repository with Config {
   }
 
 
-  override def addTopic(createTopic: CreateTopic): Future[TopicPost] = {
+  def addTopic(createTopic: CreateTopic) = {
     val date = Timestamp.valueOf(LocalDateTime.now())
     val topic = Topic(
       createTopic.topic,
@@ -125,7 +124,7 @@ class ForumRepository(database: Database) extends Repository with Config {
       date
     )
 
-    database.run {
+    {
       for {
         newTopic <- topics returning topics += topic
         newPost <- {
@@ -144,7 +143,7 @@ class ForumRepository(database: Database) extends Repository with Config {
     }
   }
 
-  override def addPost(topicId: TPValues.Id, createPost: CreatePost): Future[Post] = database.run {
+  def addPost(topicId: TPValues.Id, createPost: CreatePost) = {
     val date = Timestamp.valueOf(LocalDateTime.now())
     for {
       tid <- topics.filter(_.id === topicId).result.headOption
@@ -166,7 +165,7 @@ class ForumRepository(database: Database) extends Repository with Config {
     } yield newPost
   }
 
-  override def updatePost(postSecret: TPValues.Secret, updatePost: UpdatePost): Future[Post] = database.run {
+  def updatePost(postSecret: TPValues.Secret, updatePost: UpdatePost) = {
     for {
       exists <- posts.filter(_.secret === postSecret).result.headOption
       post <- exists match {
@@ -177,15 +176,15 @@ class ForumRepository(database: Database) extends Repository with Config {
     } yield post
   }
 
-  override def deletePost(postSecret: TPValues.Secret): Future[Int] = database.run {
+  def deletePost(postSecret: TPValues.Secret) = {
     posts.filter(_.secret === postSecret).delete
   }
 
-  override def getPost(postId: TPValues.Id): Future[Option[Post]] = database.run {
+  def getPost(postId: TPValues.Id) = {
     posts.filter(_.id === postId).result.headOption
   }
 
-  override def getTopic(topicId: TPValues.Id): Future[Option[Topic]] = database.run {
+  def getTopic(topicId: TPValues.Id) = {
     topics.filter(_.id === topicId).result.headOption
   }
 }

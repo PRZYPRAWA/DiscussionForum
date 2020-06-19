@@ -5,7 +5,7 @@ import akka.event.{Logging, LoggingAdapter}
 import akka.http.scaladsl.Http
 import akka.stream.{ActorMaterializer, Materializer}
 import appConfig.Config
-import database.{Connection, ForumRepository}
+import database.{DbConnection, Queries, PG, ForumRepository}
 import validation._
 
 import scala.concurrent.ExecutionContextExecutor
@@ -27,9 +27,12 @@ object ForumMain extends App with Service with Config {
 
   override val logger = Logging(system, getClass)
 
-  val connection = new Connection
-  val database = new ForumRepository(connection.database)
-  val router = new ForumRouter(database)
+  implicit val profile = new PG
+
+  val conn = new DbConnection
+  val queries = new Queries
+  val repo = new ForumRepository(conn, queries)
+  val router = new ForumRouter(repo)
 
   Http().bindAndHandle(router.route, config.getString("http.interface"), config.getInt("http.port"))
 }
