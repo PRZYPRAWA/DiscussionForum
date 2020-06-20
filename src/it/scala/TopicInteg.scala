@@ -1,10 +1,10 @@
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import database.{DbConnection, ForumRepository, PG, Queries}
-import main._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import database.{DbConnection, ForumRepository, PG, Queries}
+import main._
 import validation.ApiError
 import TPValuesImplicits._
 
@@ -14,8 +14,6 @@ class TopicInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with 
 
   val testCreatePost = CreatePost("Test content".toContent, "test username".toUsername, "test@email.om".toEmail)
   val invalidTestCreatePost = CreatePost("Test content".toContent, "test username".toUsername, "test.com".toEmail)
-
-  private var postToDelete: String = ""
 
   trait DbConnectionTests {
     implicit val profile = new PG
@@ -33,8 +31,6 @@ class TopicInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with 
         val resp = responseAs[TopicPost]
         val (newTopic, newPost) = (resp.topic, resp.post)
 
-        postToDelete = newPost.secret.value
-
         newTopic.created_by shouldBe testCreateTopic.username
         newPost.username shouldBe testCreateTopic.username
         newTopic.topic shouldBe testCreateTopic.topic
@@ -43,11 +39,6 @@ class TopicInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with 
       }
     }
 
-    "delete post with secret" in new DbConnectionTests {
-      Delete("/posts/" + postToDelete) ~> topicRouter.postRoute ~> check {
-        status shouldBe StatusCodes.OK
-      }
-    }
 
     "not add topic and post with invalid data" in new DbConnectionTests {
       Post("/topics", invalidTestCreateTopic) ~> topicRouter.topicRoute ~> check {
@@ -62,17 +53,9 @@ class TopicInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with 
         status shouldBe StatusCodes.OK
         val resp = responseAs[Post]
 
-        postToDelete = resp.secret.value
-
         resp.username shouldBe testCreatePost.username
         resp.content shouldBe testCreatePost.content
         resp.email shouldBe testCreatePost.email
-      }
-    }
-
-    "delete another post with secret" in new DbConnectionTests {
-      Delete("/posts/" + postToDelete) ~> topicRouter.postRoute ~> check {
-        status shouldBe StatusCodes.OK
       }
     }
 

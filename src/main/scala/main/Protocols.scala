@@ -105,4 +105,6 @@ trait Protocols extends DefaultJsonProtocol with SprayJsonSupport with ValuesPro
   implicit val topicPostFormat = jsonFormat2(TopicPost.apply)
 
   implicit val apiErrorFormat = jsonFormat2(ApiError.apply)
+
+  implicit val deletedFormat = jsonFormat1(Deleted.apply)
 }

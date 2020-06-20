@@ -328,9 +328,11 @@ curl --location --request DELETE 'localhost:9000/posts/76ee3770-19e5-41bb-bc78-9
     "content": "Update example"
 }'
 ```
-As response we simply get number of lines deleted:
+As response we get number of lines deleted:
 ```json
-1
+{
+   "rows": 1
+}
 ```
 
 ## Running tests 

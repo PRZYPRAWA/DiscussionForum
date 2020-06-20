@@ -1,10 +1,10 @@
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import database.{DbConnection, ForumRepository, PG, Queries}
-import main.{ForumRouter, Post, TopicDirectives, UpdatePost}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import database.{DbConnection, ForumRepository, PG, Queries}
+import main.{CreatePost, ForumRouter, Post, TopicDirectives, UpdatePost}
 import validation.ApiError
 import main.TPValuesImplicits._
 
@@ -50,6 +50,25 @@ class PostInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with D
     "return posts" in new DbConnectionTests {
       Get("/posts") ~> postRouter.postRoute ~> check {
         status shouldBe StatusCodes.OK
+      }
+    }
+
+    "add and delete post to corresponding topic with valid data" in new DbConnectionTests {
+      val testCreatePost = CreatePost("Test content".toContent, "test username".toUsername, "test@email.om".toEmail)
+
+      Post("/topics/1", testCreatePost) ~> postRouter.topicRoute ~> check {
+        status shouldBe StatusCodes.OK
+        val resp = responseAs[Post]
+
+        resp.username shouldBe testCreatePost.username
+        resp.content shouldBe testCreatePost.content
+        resp.email shouldBe testCreatePost.email
+
+        val secret = resp.secret
+
+        Delete("/posts/" + secret) ~> postRouter.postRoute ~> check {
+          status shouldBe StatusCodes.OK
+        }
       }
     }
 

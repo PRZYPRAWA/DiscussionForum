@@ -1,7 +1,6 @@
 package main
 
 import java.sql.Timestamp
-
 import slick.lifted.MappedTo
 
 case class Topic(
@@ -23,11 +22,11 @@ case class Post(
                )
 
 case class CreateTopic(
-                                  topic: TPValues.Topic,
-                                  content: TPValues.Content,
-                                  username: TPValues.Username,
-                                  email: TPValues.Email
-                                )
+                        topic: TPValues.Topic,
+                        content: TPValues.Content,
+                        username: TPValues.Username,
+                        email: TPValues.Email
+                      )
 
 case class CreatePost(content: TPValues.Content, username: TPValues.Username, email: TPValues.Email)
 
@@ -36,6 +35,8 @@ case class UpdatePost(content: TPValues.Content)
 case class TopicPosts(topic: Topic, posts: Seq[Post])
 
 case class TopicPost(topic: Topic, post: Post)
+
+case class Deleted(rows: Int)
 
 object TPValues {
 
@@ -51,33 +52,34 @@ object TPValues {
 
   case class Secret(value: String) extends AnyVal with MappedTo[String]
 
-
-
 }
 
 object TPValuesImplicits {
+
   import main.TPValues._
 
-  implicit class StringToSecret(s : String) {
+  implicit class StringToSecret(s: String) {
     def toSecret = Secret(s)
   }
+
   implicit class LongToId(l: Long) {
     def toId = Id(l)
   }
 
-  implicit class StringToEmail(s:String) {
+  implicit class StringToEmail(s: String) {
     def toEmail = Email(s)
   }
 
-  implicit class StringToContent(s:String) {
+  implicit class StringToContent(s: String) {
     def toContent = Content(s)
   }
 
-  implicit class StringToTopic(s:String) {
+  implicit class StringToTopic(s: String) {
     def toTopic = TPValues.Topic(s)
   }
 
-  implicit class StringToUsername(s:String) {
+  implicit class StringToUsername(s: String) {
     def toUsername = Username(s)
   }
+
 }

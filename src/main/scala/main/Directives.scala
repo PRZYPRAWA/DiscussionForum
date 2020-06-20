@@ -1,12 +1,11 @@
 package main
 
-import validation.ApiError
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse}
 import akka.http.scaladsl.server.{Directive1, Directives}
 import spray.json._
-
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
+import validation.ApiError
 
 trait TopicDirectives extends Directives with Protocols {
 

@@ -3,13 +3,13 @@ package database
 import java.sql.Timestamp
 import java.time.LocalDateTime
 import java.util.UUID
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.math.max
 
 import appConfig.Config
 import database.Queries.{NoPost, NoTopic}
 import main._
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.math.max
 
 object Queries {
 
@@ -19,7 +19,8 @@ object Queries {
 
 }
 
-class Queries(implicit val profile: DatabaseModule) extends Config { //Repository with Config {
+class Queries(implicit val profile: DatabaseModule) extends Config {
+
   import profile.profile.api._
 
   val LIMIT = config.getInt("app.limit")
@@ -153,9 +154,14 @@ class Queries(implicit val profile: DatabaseModule) extends Config { //Repositor
     } yield post
   }
 
-  def deletePost(postSecret: TPValues.Secret) = {
-    posts.filter(_.secret === postSecret).delete
-  }
+  def deletePost(postSecret: TPValues.Secret) = for {
+    d <- posts.filter(_.secret === postSecret).delete
+    isDeleted <- d match {
+      case 0 => DBIO.failed(NoPost(postSecret))
+      case 1 => DBIO.successful(d)
+      case _ => DBIO.failed(new Exception(""))
+    }
+  } yield Deleted(isDeleted)
 
   def getPost(postId: TPValues.Id) = {
     posts.filter(_.id === postId).result.headOption

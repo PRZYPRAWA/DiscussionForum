@@ -1,11 +1,9 @@
 package database
 
 import java.sql.Timestamp
-
-
-import main.{Post, TPValues, Topic}
 import slick.jdbc.PostgresProfile.api._
 import slick.sql.SqlProfile.ColumnOption.SqlType
+import main.{Post, TPValues, Topic}
 
 
 class TopicTable(tag: Tag) extends Table[Topic](tag, "topic") {

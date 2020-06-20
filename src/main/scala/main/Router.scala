@@ -6,7 +6,7 @@ import database.ForumRepository
 import main.TPValuesImplicits._
 import validation._
 
-class ForumRouter(val repo:ForumRepository) extends Directives with TopicDirectives with ValidatorDirectives {
+class ForumRouter(val repo: ForumRepository) extends Directives with TopicDirectives with ValidatorDirectives {
 
   def route = logRequestResult("akka-http-forum") {
     topicRoute ~ postRoute
@@ -74,7 +74,7 @@ class ForumRouter(val repo:ForumRepository) extends Directives with TopicDirecti
           case NoPost(_) => ApiError.postNotFound(secret)
           case _ => ApiError.generic
         } { rowsAffected =>
-          complete(rowsAffected.toString)
+          complete(rowsAffected)
         }
       }
   }

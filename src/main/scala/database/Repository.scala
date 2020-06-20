@@ -1,8 +1,7 @@
 package database
 
-import main.{CreatePost, CreateTopic, Post, TPValues, Topic, TopicPost, TopicPosts, UpdatePost}
-
 import scala.concurrent.Future
+import main.{CreatePost, CreateTopic, Deleted, Post, TPValues, Topic, TopicPost, TopicPosts, UpdatePost}
 
 trait Repository {
 
@@ -22,7 +21,7 @@ trait Repository {
 
   def updatePost(postSecret: TPValues.Secret, updatePost: UpdatePost): Future[Post]
 
-  def deletePost(postSecret: TPValues.Secret): Future[Int]
+  def deletePost(postSecret: TPValues.Secret): Future[Deleted]
 }
 
 class ForumRepository(val connection: DbConnection, val queries: Queries) extends Repository {
@@ -55,6 +54,6 @@ class ForumRepository(val connection: DbConnection, val queries: Queries) extend
   override def updatePost(postSecret: TPValues.Secret, updatePost: UpdatePost): Future[Post] =
     database.run(queries.updatePost(postSecret, updatePost))
 
-  override def deletePost(postSecret: TPValues.Secret): Future[Int] =
+  override def deletePost(postSecret: TPValues.Secret): Future[Deleted] =
     database.run(queries.deletePost(postSecret))
 }
