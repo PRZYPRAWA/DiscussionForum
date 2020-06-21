@@ -19,8 +19,6 @@ object ApiError {
 
   val emptyEmailField: ApiError = new ApiError(StatusCodes.BadRequest, "The mail field must not be empty.")
 
-  val emailTooLong: ApiError = new ApiError(StatusCodes.BadRequest, "The mail field is too long.")
-
   val wrongEmailFormat: ApiError = new ApiError(StatusCodes.BadRequest, "The mail field is invalid.")
 
   val emptyUsernameField: ApiError = new ApiError(StatusCodes.BadRequest, "The username field must not be empty.")
@@ -28,7 +26,6 @@ object ApiError {
   val wrongUsernameFormat: ApiError = new ApiError(StatusCodes.BadRequest, "The username field is invalid.")
 
   val usernameTooLong: ApiError = new ApiError(StatusCodes.BadRequest, "The username field is too long.")
-
 
   def topicNotFound(id: String): ApiError =
     new ApiError(StatusCodes.NotFound, s"The topic with id $id could not be found.")

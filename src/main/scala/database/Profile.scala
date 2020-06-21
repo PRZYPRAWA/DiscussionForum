@@ -1,7 +1,6 @@
 package database
 
 import slick.jdbc.JdbcProfile
-import appConfig.Config
 
 trait DatabaseModule {
 
@@ -9,7 +8,7 @@ trait DatabaseModule {
 
 }
 
-class PG extends DatabaseModule with Config {
+class PostgresModule extends DatabaseModule {
 
   override val profile: JdbcProfile = slick.jdbc.PostgresProfile
 

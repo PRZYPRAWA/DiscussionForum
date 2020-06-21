@@ -2,6 +2,7 @@ package database
 
 import scala.concurrent.Future
 import main.{CreatePost, CreateTopic, Deleted, Post, TPValues, Topic, TopicPost, TopicPosts, UpdatePost}
+import QueryParameters._
 
 trait Repository {
 
@@ -27,14 +28,19 @@ trait Repository {
 class ForumRepository(val connection: DbConnection, val queries: Queries) extends Repository {
   val database = connection.database
 
-  override def getTopics(limit: Option[Int], offset: Option[Int]): Future[Seq[Topic]] =
-    database.run(queries.getTopics(limit, offset))
+  override def getTopics(limit: Option[Int], offset: Option[Int]): Future[Seq[Topic]] = {
+    val (off, lim) = getLimitOffset(limit, offset)
+    database.run(queries.getTopics(lim, off))
+  }
 
-  override def getPosts(limit: Option[Int], offset: Option[Int]): Future[Seq[Post]] =
-    database.run(queries.getPosts(limit, offset))
+  override def getPosts(limit: Option[Int], offset: Option[Int]): Future[Seq[Post]] = {
+    val (off, lim) = getLimitOffset(limit, offset)
+    database.run(queries.getPosts(lim, off))
+  }
 
   override def getPost(postId: TPValues.Id): Future[Option[Post]] =
     database.run(queries.getPost(postId))
+
 
   override def getTopic(topicId: TPValues.Id): Future[Option[Topic]] =
     database.run(queries.getTopic(topicId))
@@ -43,13 +49,20 @@ class ForumRepository(val connection: DbConnection, val queries: Queries) extend
                               offset: Option[Int],
                               before: Option[Int],
                               after: Option[Int]
-                             ): Future[TopicPosts] =
-    database.run(queries.topicWithPosts(topicId, offset, before, after))
+                             ): Future[TopicPosts] = {
+    val (off, aft, bef) = getOffsetAfterBefore(offset, after, before)
+    database.run(queries.topicWithPosts(topicId, off, aft, bef))
+  }
 
-  override def addTopic(createTopic: CreateTopic): Future[TopicPost] = database.run(queries.addTopic(createTopic))
+  override def addTopic(createTopic: CreateTopic): Future[TopicPost] = {
+    val (t, p) = createTopicPostToAdd(createTopic)
+    database.run(queries.addTopic(t, p))
+  }
 
-  override def addPost(topicId: TPValues.Id, createPost: CreatePost): Future[Post] =
-    database.run(queries.addPost(topicId, createPost))
+  override def addPost(topicId: TPValues.Id, createPost: CreatePost): Future[Post] = {
+    val post = createPostToAdd(createPost)
+    database.run(queries.addPost(topicId, post))
+  }
 
   override def updatePost(postSecret: TPValues.Secret, updatePost: UpdatePost): Future[Post] =
     database.run(queries.updatePost(postSecret, updatePost))

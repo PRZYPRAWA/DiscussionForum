@@ -1,7 +1,7 @@
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import scala.concurrent.ExecutionContext.Implicits.global
-import database.{DbConnection, ForumRepository, PG, Queries}
+import database.{DbConnection, ForumRepository, PostgresModule, Queries}
 import main.{CreatePost, CreateTopic}
 import main.TPValuesImplicits._
 
@@ -14,7 +14,7 @@ class DatabaseInteg extends AnyWordSpec with Matchers {
   val invalidTestCreatePost = CreatePost("Test content".toContent, "test username".toUsername, "test.com".toEmail)
 
   trait DatabaseConn {
-    implicit val profile = new PG
+    implicit val profile = new PostgresModule
 
     val conn = new DbConnection
     val queries = new Queries

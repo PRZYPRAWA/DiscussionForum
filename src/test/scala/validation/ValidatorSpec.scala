@@ -19,7 +19,7 @@ class ValidatorSpec extends AnyWordSpec with Matchers {
     }
 
     "return Some(ApiError.wrongEmailFormat) if email is invalid" in {
-      val invalidEmail1 = TPValues.Email("@wp.pl")
+      val invalidEmail1 = TPValues.Email("wp.pl")
       val invalidEmail2 = TPValues.Email("")
 
       val validatedEmail1 = ValidatorConsts.validateEmail(invalidEmail1)

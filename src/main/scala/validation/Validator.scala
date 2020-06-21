@@ -21,16 +21,13 @@ object ValidatorConsts extends Config {
   val maxContentLength = config.getInt("app.maxContentLength")
   val maxUsernameLength = config.getInt("app.maxUsernameLength")
   val maxTopicLength = config.getInt("app.maxTopicLength")
-  val maxEmailLength = config.getInt("app.maxEmailLength")
-  val emailRegex = ".+@.+"
 
   def validateEmail(email: TPValues.Email) = {
     if (email.value.isEmpty)
       Some(ApiError.emptyEmailField)
-    else if (email.value.length > maxEmailLength)
-      Some(ApiError.emailTooLong)
-    else if (!email.value.matches(emailRegex))
+    else if (!email.value.contains("@"))
       Some(ApiError.wrongEmailFormat)
+
     else None
   }
 

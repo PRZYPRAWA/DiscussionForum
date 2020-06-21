@@ -5,7 +5,7 @@ import akka.event.{Logging, LoggingAdapter}
 import akka.http.scaladsl.Http
 import akka.stream.{ActorMaterializer, Materializer}
 import appConfig.Config
-import database.{DbConnection, Queries, PG, ForumRepository}
+import database.{DbConnection, Queries, PostgresModule, ForumRepository}
 import validation._
 
 import scala.concurrent.ExecutionContextExecutor
@@ -27,7 +27,7 @@ object ForumMain extends App with Service with Config {
 
   override val logger = Logging(system, getClass)
 
-  implicit val profile = new PG
+  implicit val profile = new PostgresModule
 
   val conn = new DbConnection
   val queries = new Queries
