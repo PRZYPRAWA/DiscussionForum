@@ -1,9 +1,9 @@
 package validation
 
-import main.{CreatePost, CreateTopic, TPValues, UpdatePost}
-import main.TPValuesImplicits._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import main.{CreatePost, CreateTopic, TPValues, UpdatePost}
+import main.TPValuesImplicits._
 
 class ValidatorSpec extends AnyWordSpec with Matchers {
   "ValidatorConsts" should {

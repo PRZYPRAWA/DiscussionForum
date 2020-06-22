@@ -3,10 +3,11 @@ import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import database.{DbConnection, ForumRepository, PostgresModule, Queries}
+import database.{ForumRepository, PostgresConnection, PostgresProfile}
 import main._
 import validation.ApiError
 import TPValuesImplicits._
+import database.queries.Queries
 
 class TopicInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with Directives with TopicDirectives {
   val testCreateTopic = CreateTopic("Test topic".toTopic, "Test content".toContent, "Test username".toUsername, "test@email.com".toEmail)
@@ -16,9 +17,9 @@ class TopicInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with 
   val invalidTestCreatePost = CreatePost("Test content".toContent, "test username".toUsername, "test.com".toEmail)
 
   trait DbConnectionTests {
-    implicit val profile = new PostgresModule
+    implicit val profile = new PostgresProfile
 
-    val conn = new DbConnection
+    val conn = new PostgresConnection
     val queries = new Queries
     val repo = new ForumRepository(conn, queries)
     val topicRouter = new ForumRouter(repo)

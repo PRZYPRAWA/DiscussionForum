@@ -1,8 +1,9 @@
 package database
 
+import database.queries.Queries
+import database.queries.QueryParameters._
 import scala.concurrent.Future
 import main.{CreatePost, CreateTopic, Deleted, Post, TPValues, Topic, TopicPost, TopicPosts, UpdatePost}
-import QueryParameters._
 
 trait Repository {
 
@@ -25,16 +26,16 @@ trait Repository {
   def deletePost(postSecret: TPValues.Secret): Future[Deleted]
 }
 
-class ForumRepository(val connection: DbConnection, val queries: Queries) extends Repository {
+class ForumRepository(val connection: PostgresConnection, val queries: Queries) extends Repository {
   val database = connection.database
 
   override def getTopics(limit: Option[Int], offset: Option[Int]): Future[Seq[Topic]] = {
-    val (off, lim) = getLimitOffset(limit, offset)
+    val (lim, off) = getLimitOffset(limit, offset)
     database.run(queries.getTopics(lim, off))
   }
 
   override def getPosts(limit: Option[Int], offset: Option[Int]): Future[Seq[Post]] = {
-    val (off, lim) = getLimitOffset(limit, offset)
+    val (lim, off) = getLimitOffset(limit, offset)
     database.run(queries.getPosts(lim, off))
   }
 
@@ -51,7 +52,7 @@ class ForumRepository(val connection: DbConnection, val queries: Queries) extend
                               after: Option[Int]
                              ): Future[TopicPosts] = {
     val (off, aft, bef) = getOffsetAfterBefore(offset, after, before)
-    database.run(queries.topicWithPosts(topicId, off, aft, bef))
+    database.run(queries.topicWithPosts(topicId, off, bef, aft))
   }
 
   override def addTopic(createTopic: CreateTopic): Future[TopicPost] = {

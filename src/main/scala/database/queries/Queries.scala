@@ -1,7 +1,8 @@
-package database
+package database.queries
 
 import appConfig.Config
-import database.Queries.{NoPost, NoTopic}
+import database.queries.Queries.{NoPost, NoTopic}
+import database.{DatabaseProfile, PostTable, TopicTable}
 import main._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -14,7 +15,7 @@ object Queries {
 
 }
 
-class Queries(implicit val profile: DatabaseModule) extends Config {
+class Queries(implicit val profile: DatabaseProfile) extends Config {
 
   import profile.profile.api._
 

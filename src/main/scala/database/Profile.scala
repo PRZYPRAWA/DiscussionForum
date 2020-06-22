@@ -2,13 +2,13 @@ package database
 
 import slick.jdbc.JdbcProfile
 
-trait DatabaseModule {
+trait DatabaseProfile {
 
   val profile: JdbcProfile
 
 }
 
-class PostgresModule extends DatabaseModule {
+class PostgresProfile extends DatabaseProfile {
 
   override val profile: JdbcProfile = slick.jdbc.PostgresProfile
 

@@ -1,8 +1,8 @@
 package main
 
 import akka.http.scaladsl.server.Directives
-import database.Queries.{NoPost, NoTopic}
 import database.ForumRepository
+import database.queries.Queries.{NoPost, NoTopic}
 import main.TPValuesImplicits._
 import validation._
 

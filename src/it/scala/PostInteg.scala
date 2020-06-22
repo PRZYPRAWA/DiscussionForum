@@ -1,9 +1,10 @@
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import database.queries.Queries
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import database.{DbConnection, ForumRepository, PostgresModule, Queries}
+import database.{ForumRepository, PostgresConnection, PostgresProfile}
 import main.{CreatePost, Deleted, ForumRouter, Post, TopicDirectives, UpdatePost}
 import validation.ApiError
 import main.TPValuesImplicits._
@@ -13,9 +14,9 @@ class PostInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with D
   val invalidUpdatePost = UpdatePost("".toContent)
 
   trait DbConnectionTests {
-    implicit val profile = new PostgresModule
+    implicit val profile = new PostgresProfile
 
-    val conn = new DbConnection
+    val conn = new PostgresConnection
     val queries = new Queries
     val repo = new ForumRepository(conn, queries)
     val postRouter = new ForumRouter(repo)

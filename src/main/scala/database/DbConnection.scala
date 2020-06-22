@@ -2,7 +2,7 @@ package database
 
 import appConfig.Config
 
-class DbConnection(implicit val profile: DatabaseModule) extends Config {
+class PostgresConnection(implicit val profile: DatabaseProfile) extends Config {
 
   import profile.profile.api._
 
@@ -13,3 +13,4 @@ class DbConnection(implicit val profile: DatabaseModule) extends Config {
 
   def database = Database.forURL(connectionUrl, driver = config.getString("database.driver"))
 }
+
