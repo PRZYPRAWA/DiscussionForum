@@ -6,7 +6,7 @@ import akka.http.scaladsl.Http
 import akka.stream.{ActorMaterializer, Materializer}
 import appConfig.Config
 import database.queries.Queries
-import database.{ForumRepository, PostgresConnection, PostgresProfile}
+import database.{ForumRepository, DbConnection, PostgresProfile}
 import validation._
 
 import scala.concurrent.ExecutionContextExecutor
@@ -30,7 +30,7 @@ object ForumMain extends App with Service with Config {
 
   implicit val profile = new PostgresProfile
 
-  val conn = new PostgresConnection
+  val conn = new DbConnection
   val queries = new Queries
   val repo = new ForumRepository(conn, queries)
   val router = new ForumRouter(repo)

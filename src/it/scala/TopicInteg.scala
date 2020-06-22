@@ -3,7 +3,7 @@ import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import database.{ForumRepository, PostgresConnection, PostgresProfile}
+import database.{ForumRepository, DbConnection, PostgresProfile}
 import main._
 import validation.ApiError
 import TPValuesImplicits._
@@ -19,7 +19,7 @@ class TopicInteg extends AnyWordSpec with Matchers with ScalatestRouteTest with 
   trait DbConnectionTests {
     implicit val profile = new PostgresProfile
 
-    val conn = new PostgresConnection
+    val conn = new DbConnection
     val queries = new Queries
     val repo = new ForumRepository(conn, queries)
     val topicRouter = new ForumRouter(repo)

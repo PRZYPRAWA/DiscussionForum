@@ -2,7 +2,7 @@ package database
 
 import appConfig.Config
 
-class PostgresConnection(implicit val profile: DatabaseProfile) extends Config {
+class DbConnection(implicit val profile: DatabaseProfile) extends Config {
 
   import profile.profile.api._
 

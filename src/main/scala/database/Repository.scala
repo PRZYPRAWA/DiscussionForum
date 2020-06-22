@@ -26,7 +26,7 @@ trait Repository {
   def deletePost(postSecret: TPValues.Secret): Future[Deleted]
 }
 
-class ForumRepository(val connection: PostgresConnection, val queries: Queries) extends Repository {
+class ForumRepository(val connection: DbConnection, val queries: Queries) extends Repository {
   val database = connection.database
 
   override def getTopics(limit: Option[Int], offset: Option[Int]): Future[Seq[Topic]] = {
