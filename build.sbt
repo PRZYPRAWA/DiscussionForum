@@ -1,9 +1,10 @@
 name := "discussion-forum"
 version := "1.0"
 scalaVersion := "2.13.1"
+mainClass in Compile := Some("main.Main")
 
 scalacOptions := Seq("-unchecked", "-deprecation")
-
+enablePlugins(JavaAppPackaging)
 
 lazy val root = (project in file("."))
   .configs(IntegrationTest)

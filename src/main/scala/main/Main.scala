@@ -35,5 +35,7 @@ object ForumMain extends App with Service with Config {
   val repo = new ForumRepository(conn, queries)
   val router = new ForumRouter(repo)
 
-  Http().bindAndHandle(router.route, config.getString("http.interface"), config.getInt("http.port"))
+  val port = sys.env.getOrElse("PORT", config.getString("http.port")).toInt
+
+  Http().bindAndHandle(router.route, config.getString("http.interface"), port)
 }
