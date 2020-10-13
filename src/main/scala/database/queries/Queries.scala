@@ -22,6 +22,11 @@ class Queries(implicit val profile: DatabaseProfile) extends Config {
   lazy val topics = TableQuery[TopicTable]
   lazy val posts = TableQuery[PostTable]
 
+  def createSchema = DBIO.seq(
+    topics.schema.createIfNotExists,
+    posts.schema.createIfNotExists
+  )
+
   def getTopics(limit: Int, offset: Int) =
     topics.sortBy(_.last_response.desc).drop(offset).take(limit).result
 

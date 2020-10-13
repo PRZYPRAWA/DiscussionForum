@@ -1,7 +1,7 @@
 name := "discussion-forum"
 version := "1.0"
 scalaVersion := "2.13.1"
-mainClass in Compile := Some("main.Main")
+mainClass in (Compile, run) := Some("main.ForumMain")
 
 scalacOptions := Seq("-unchecked", "-deprecation")
 enablePlugins(JavaAppPackaging)
@@ -28,8 +28,8 @@ lazy val root = (project in file("."))
         "org.scalamock" %% "scalamock" % scalaMockV % "test",
         "org.postgresql" % "postgresql" % postgresV,
         "com.typesafe.slick" %% "slick" % slickV,
-        "org.scala-lang" % "scala-reflect" % "2.13.1",
-        "com.typesafe.slick" %% "slick-testkit" % slickV % "test"
+        "com.typesafe.slick" %% "slick-testkit" % slickV % "test",
+        "org.scala-lang" % "scala-reflect" % "2.13.1"
       )
     }
 

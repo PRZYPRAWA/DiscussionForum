@@ -27,7 +27,9 @@ trait Repository {
 }
 
 class ForumRepository(val connection: DbConnection, val queries: Queries) extends Repository {
-  val database = connection.database
+  lazy val database = connection.database
+
+  database.run(queries.createSchema)
 
   override def getTopics(limit: Option[Int], offset: Option[Int]): Future[Seq[Topic]] = {
     val (lim, off) = getLimitOffset(limit, offset)
